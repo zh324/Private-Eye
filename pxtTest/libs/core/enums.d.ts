@@ -17,15 +17,15 @@ declare enum Dimension {
 }
 
 declare enum Animation {
-    //% block=left enumvalue=1
+    //% block="left" enumvalue=1
     Left,
-    //% block=right enumvalue=2
+    //% block="right" enumvalue=2
     Right
 }
 
 declare enum Direction {
-    //% block=left enumvalue=1
+    //% block=left
     Left,
-    //% block=right enumvalue=2
+    //% block=right
     Right
 }

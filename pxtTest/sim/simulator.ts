@@ -92,7 +92,7 @@ namespace pxsim {
             this.layer.resizeWorld();
             this.map.setCollisionBetween(0,1,1);
     
-            this.robot = this.game.add.sprite(50, 50, "robot");
+            this.robot = this.game.add.sprite(225, 425, "robot");
             this.robot.animations.add("idle", [0,1,2,3,4,5,6,7,8,9],12,true);
             this.robot.animations.add("walk", [10,11,12,13,14,15,16,17],12,true);
             this.robot.animations.add("jump", [18,19,20,21,22,23,24,25],12,false);
@@ -165,7 +165,7 @@ namespace pxsim {
         }
 
         moveDown() {
-            this.robot.y += 10;
+            this.robot.body.y += 50;
         }
 
 

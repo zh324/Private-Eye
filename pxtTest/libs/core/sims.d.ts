@@ -1,12 +1,12 @@
 // Auto-generated from simulator. Do not edit.
-declare namespace player {
+declare namespace Robot {
     /**
      * Sets the velocity of the player
      * @param dimension x or y
      * @param value new velocity
      */
     //% blockId=phasersetvelocity block="set player velocity %dimension to %value"
-    //% shim=player::setVelocity
+    //% shim=Robot::setVelocity
     function setVelocity(dimension: Dimension, value: number): void;
 
     /** 
@@ -23,17 +23,15 @@ declare namespace player {
      * @param animation 
      */
     //% blockId=phaserplayanimation block="player play animation %animation"
-    //% shim=player::playAnimation
+    //% shim=Robot::playAnimation
     function playAnimation(animation: Animation): void;
 
     /**
-     * Moves the sprite forward
-     * @param steps number of steps to move, eg: 1
+     * Move the robot forward
      */
-    //% weight=90
-    //% blockId=sampleForward block="forward %steps"
-    //% shim=player::forwardAsync promise
-    function forward(steps: number): void;
+    //% blockId=moveForward block="move"
+    //% shim=Robot::move
+    function move(): void;
 
     /**
      * Moves the sprite forward
@@ -43,7 +41,7 @@ declare namespace player {
     //% weight=85
     //% blockId=sampleTurn block="turn %direction|by %angle degrees"
     //% angle.min=-180 angle.max=180
-    //% shim=player::turnAsync promise
+    //% shim=Robot::turnAsync promise
     function turn(direction: Direction, angle: number): void;
 
     /**
@@ -51,18 +49,8 @@ declare namespace player {
      * @param handler 
      */
     //% blockId=onBump block="on bump"
-    //% shim=player::onBump
+    //% shim=Robot::onBump
     function onBump(handler: () => void): void;
-
-}
-declare namespace cursors {
-    /**
-     * Queries is a cursor is down
-     * @param cursor 
-     */
-    //% blockId=phasercursorsisdown block="is %cursor down"
-    //% shim=cursors::isDown
-    function isDown(cursor: Cursor): boolean;
 
 }
 declare namespace loops {

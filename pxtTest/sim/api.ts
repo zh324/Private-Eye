@@ -1,6 +1,8 @@
 /// <reference path="../libs/core/enums.d.ts"/>
+/// <reference path="../node_modules/pxt-core/built/pxtsim.d.ts"/>
+/// <reference path="../node_modules/phaser-ce/typescript/phaser.d.ts" />
 
-namespace pxsim.player {
+namespace pxsim.Robot {
     /**
      * Sets the velocity of the player
      * @param dimension x or y
@@ -43,13 +45,13 @@ namespace pxsim.player {
     }
 
     /**
-     * Moves the sprite forward
-     * @param steps number of steps to move, eg: 1
+     * Move the robot forward
      */
-    //% weight=90
-    //% blockId=sampleForward block="forward %steps"
-    export function forwardAsync(steps: number) {
-        return board().robot.body.velocity.y = 250 * steps;
+    //% blockId=moveForward block="move"
+    export function move() {
+        // Move the robot forward
+        board().robot.body.velocity.x = 250;
+        //board().robot.body.y += 50;
     }
 
     /**
@@ -82,23 +84,7 @@ namespace pxsim.player {
     }
 }
 
-namespace pxsim.cursors {
-    /**
-     * Queries is a cursor is down
-     * @param cursor 
-     */
-    //% blockId=phasercursorsisdown block="is %cursor down"
-    export function isDown(cursor: Cursor): boolean {
-        const cursors = board().cursors;
-        switch (cursor) {
-            case Cursor.Left: return cursors.left.isDown;
-            case Cursor.Right: return cursors.right.isDown;
-            case Cursor.Up: return cursors.right.isUp;
-            case Cursor.Down: return cursors.down.isDown;
-            default: return false;
-        }
-    }
-}
+
 
 namespace pxsim.loops {
     /**
@@ -121,5 +107,3 @@ namespace pxsim.loops {
         return Promise.delay(ms)
     }
 }
-
-name 
