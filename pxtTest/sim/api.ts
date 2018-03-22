@@ -50,7 +50,7 @@ namespace pxsim.Robot {
     //% blockId=moveForward block="move"
     export function move() {
         // Move the robot forward
-        board().robot.body.velocity.x = 250;
+        board().robot.body.velocity.y = -250;
         //board().robot.body.y += 50;
     }
 

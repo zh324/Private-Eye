@@ -2,15 +2,25 @@
 
 /// <reference path="../node_modules/pxt-core/built/pxtsim.d.ts"/>
 /// <reference path="../node_modules/phaser-ce/typescript/phaser.d.ts" />
+//
+//declare let Phaser: any;
 
 
 namespace pxsim {
+
+    export interface ISimMessage {
+        type: "simulator.message";
+        key?: string;
+        data?: string;
+    }
     /**
      * This function gets called each time the program restarts
      */
+
     initCurrentRuntime = () => {
         runtime.board = new Board();
     };
+
 
     /**
      * Gets the current 'board', eg. program state.
@@ -18,6 +28,14 @@ namespace pxsim {
     export function board(): Board {
         return runtime.board as Board;
     }
+
+    const postContainerMessage = (message: pxsim.ISimMessage) => {
+        Runtime.postMessage({
+            type: "custom",
+            __proxy: "parent",
+            content: message
+        } as pxsim.SimulatorCustomMessage);
+    };
 
     /**
      * Represents the entire state of the executing program.
@@ -51,13 +69,20 @@ namespace pxsim {
 
         initAsync(msg: pxsim.SimulatorRunMessage): Promise<void> {
 
-            this.game = new Phaser.Game(448, 448, Phaser.AUTO, '', {
-                preload: () => this.preload(),
-                create: () => this.create(),
-                update: () => this.update()
+            postContainerMessage({
+                type: "simulator.message",
+                key: "init"
+            });
+            let that = this;
+            return new Promise<void>((resolve, reject) => {
+                this.game = new Phaser.Game(448, 448, Phaser.AUTO, '', {
+                    preload: () => this.preload(),
+                    create: () => {this.create(); resolve();},
+                    update: () => this.update()
+                });
             });
 
-            return Promise.resolve();
+        
         }
 
 
@@ -130,11 +155,11 @@ namespace pxsim {
             this.robot.body.velocity.y = 0;
     
             if (this.cursors.left.isDown){
-                this.robot.x -= 10;
+                this.robot.body.velocity.x = -250;
                 //this.robot.body.velocity.x = -250;
             }
             else if (this.cursors.right.isDown){
-                this.robot.x += 10;
+                this.robot.body.velocity.x = 250;
                 //this.robot.body.velocity.x = 250;
             }
     
@@ -147,12 +172,12 @@ namespace pxsim {
     
     
             if (this.cursors.up.isDown){
-                this.robot.y -= 10;
+                this.robot.body.velocity.y = -250;
             }
     
             if (this.cursors.down.isDown){
-                this.robot.y += 10;
-                //this.robot.body.velocity.y = 250;
+                
+                this.robot.body.velocity.y = 250;
             }
     
     
