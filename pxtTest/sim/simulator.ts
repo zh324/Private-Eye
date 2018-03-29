@@ -1,5 +1,3 @@
-
-
 /// <reference path="../node_modules/pxt-core/built/pxtsim.d.ts"/>
 /// <reference path="../node_modules/phaser-ce/typescript/phaser.d.ts" />
 //
@@ -53,7 +51,7 @@ namespace pxsim {
         //public stars: Phaser.Group;
 
 
-        public level = 1;
+        public level = 4;
         public bombCount: any;
         public need: number;
         public collected: number;
@@ -61,6 +59,8 @@ namespace pxsim {
         public map: any;
         public layer: any;
         public keyCount: any;
+
+        public move: Phaser.Tween;
 
         constructor() {
             super();
@@ -81,10 +81,7 @@ namespace pxsim {
                     update: () => this.update()
                 });
             });
-
-        
         }
-
 
 
         preload() {
@@ -117,7 +114,7 @@ namespace pxsim {
             this.layer.resizeWorld();
             this.map.setCollisionBetween(0,1,1);
     
-            this.robot = this.game.add.sprite(225, 425, "robot");
+            this.robot = this.game.add.sprite(228, 425, "robot");
             this.robot.animations.add("idle", [0,1,2,3,4,5,6,7,8,9],12,true);
             this.robot.animations.add("walk", [10,11,12,13,14,15,16,17],12,true);
             this.robot.animations.add("jump", [18,19,20,21,22,23,24,25],12,false);
@@ -141,26 +138,25 @@ namespace pxsim {
 
             //  Our controls.
             this.cursors = this.game.input.keyboard.createCursorKeys();
-
+            
         }
 
 
 
         update() {
-
             // new added
             this.game.physics.arcade.collide(this.robot, this.layer);
-    
+            //this.robot.body.moving = false;
+
             this.robot.body.velocity.x = 0;
             this.robot.body.velocity.y = 0;
     
             if (this.cursors.left.isDown){
-                this.robot.body.velocity.x = -250;
-                //this.robot.body.velocity.x = -250;
+                this.moveLeft();
             }
+
             else if (this.cursors.right.isDown){
-                this.robot.body.velocity.x = 250;
-                //this.robot.body.velocity.x = 250;
+                this.moveRight();
             }
     
             if (this.robot.body.velocity.x >=0){
@@ -170,31 +166,15 @@ namespace pxsim {
                 this.robot.scale.x = -this.robotSize;
             }
     
-    
+            
             if (this.cursors.up.isDown){
-                this.robot.body.velocity.y = -250;
+                this.moveUp();      
             }
-    
+          
             if (this.cursors.down.isDown){
-                
-                this.robot.body.velocity.y = 250;
-            }
-    
-    
-            if (Math.abs(this.robot.body.velocity.x)>50 || Math.abs(this.robot.body.velocity.y)>50){
-                this.robot.animations.play("walk");
-            }
-            else{
-                this.robot.animations.play("idle");
+                this.moveDown();
             }
         }
-
-        moveDown() {
-            this.robot.body.y += 50;
-        }
-
-
-    
 
 
         kill() {
@@ -205,6 +185,54 @@ namespace pxsim {
             }
         }
 
+        moveLeft() {
+            var left = this.game.add.tween(this.robot);
+            this.robot.animations.play("walk");
+            left.to({ x: '-64' }, 500, Phaser.Easing.Linear.None, true)
+            left.onComplete.add(function() {  
+                this.robot.animations.play("idle");
+                // Set robotMoving back to false so that the next movement can start.
+            }, this)
+            left.start();
+            //this.robot.body.velocity.x = -250;
+
+        }
+
+        moveRight() {
+            var right = this.game.add.tween(this.robot);
+            this.robot.animations.play("walk");
+            right.to({ x: '64' }, 500, Phaser.Easing.Linear.None, true)
+            right.onComplete.add(function() {  
+                this.robot.animations.play("idle");
+                // Set robotMoving back to false so that the next movement can start.
+            }, this)
+            right.start();
+            //this.robot.body.velocity.x = -250;
+        }
+
+        moveUp() {
+            var up = this.game.add.tween(this.robot);
+            this.robot.animations.play("walk");
+            up.to({ y: '-64' }, 500, Phaser.Easing.Linear.None, true)
+            up.onComplete.add(function() {  
+                this.robot.animations.play("idle");
+                // Set robotMoving back to false so that the next movement can start.
+            }, this)
+            up.start();
+            //this.robot.body.velocity.x = -250;
+        }
+
+        moveDown() {
+            var down = this.game.add.tween(this.robot);
+            this.robot.animations.play("walk");
+            down.to({ y: '64' }, 500, Phaser.Easing.Linear.None, true)
+            down.onComplete.add(function() {  
+                this.robot.animations.play("idle");
+                // Set robotMoving back to false so that the next movement can start.
+            }, this)
+            down.start();
+            //this.robot.body.velocity.x = -250;
+        }
 
         // new added
         reachedGoal(sprite: Phaser.Sprite, tile: Phaser.Tile){

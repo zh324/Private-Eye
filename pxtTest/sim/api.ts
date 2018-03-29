@@ -47,11 +47,38 @@ namespace pxsim.Robot {
     /**
      * Move the robot forward
      */
-    //% blockId=moveForward block="move"
-    export function move() {
+    //% blockId=moveUp block="moveUp"
+    export function moveupAsync() {
         // Move the robot forward
-        board().robot.body.velocity.y = -250;
-        //board().robot.body.y += 50;
+        board().moveUp();
+        return Promise.delay(1000)
+    }
+
+    /**
+     * Move the robot forward
+     */
+    //% blockId=moveDown block="moveDown"
+    export function movedownAsync() {
+        board().moveDown();
+        return Promise.delay(1000)
+    }
+
+    /**
+     * Move the robot forward
+     */
+    //% blockId=moveLeft block="moveLeft"
+    export function moveleftAsync() {
+        board().moveLeft();
+        return Promise.delay(1000)
+    }
+
+    /**
+     * Move the robot forward
+     */
+    //% blockId=moveRight block="moveRight"
+    export function moverightAsync() {
+        board().moveRight();
+        return Promise.delay(1000)
     }
 
     /**

@@ -29,9 +29,30 @@ declare namespace Robot {
     /**
      * Move the robot forward
      */
-    //% blockId=moveForward block="move"
-    //% shim=Robot::move
-    function move(): void;
+    //% blockId=moveUp block="moveUp"
+    //% shim=Robot::moveupAsync promise
+    function moveup(): void;
+
+    /**
+     * Move the robot forward
+     */
+    //% blockId=moveDown block="moveDown"
+    //% shim=Robot::movedownAsync promise
+    function movedown(): void;
+
+    /**
+     * Move the robot forward
+     */
+    //% blockId=moveLeft block="moveLeft"
+    //% shim=Robot::moveleftAsync promise
+    function moveleft(): void;
+
+    /**
+     * Move the robot forward
+     */
+    //% blockId=moveRight block="moveRight"
+    //% shim=Robot::moverightAsync promise
+    function moveright(): void;
 
     /**
      * Moves the sprite forward
