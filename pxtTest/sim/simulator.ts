@@ -51,7 +51,7 @@ namespace pxsim {
         //public stars: Phaser.Group;
 
 
-        public level = 4;
+        public level = 1;
         public bombCount: any;
         public need: number;
         public collected: number;
@@ -85,60 +85,78 @@ namespace pxsim {
 
 
         preload() {
+            console.log("Preload");
             this.game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
             this.game.load.spritesheet("robot", "assets/robot.png", 80, 111, 28);
             this.game.load.image("tiles","assets/tiles.png");
-
-            var mapPath = "maps/map"+this.level+".json";
-            this.game.load.tilemap("map",mapPath,null,Phaser.Tilemap.TILED_JSON);
-
+            
+            // Load in all maps that we have
+            for (var i = 0; i <= 4; i++) {
+                //Load just adds a Tile Map data file to the current load queue.
+                //It doesn't seem to replace the initial load
+                this.game.load.tilemap("map"+i,"maps/map"+i+".json",null,Phaser.Tilemap.TILED_JSON);
+            }
         }
 
-        create() {
-            // new added
-            this.game.physics.startSystem(Phaser.Physics.ARCADE);
 
+        create() {
+            console.log("Create");
+            
+            // Setup game physics
+            this.game.physics.startSystem(Phaser.Physics.ARCADE);
             this.game.world.enableBody = true;
             this.game.physics.arcade.gravity.y = 0;
 
+            // Game elements
             this.keyCount = [0, 0, 0, 0];
             this.need = this.keyCount[this.level - 1];
             this.collected = 0;
 
-            this.robotSize = 0.5;
+            this.createCurrLevel();
+        }
 
-            this.map = this.game.add.tilemap("map");
+        // Creates the map and its associated elements for the current level.
+        createCurrLevel() {
+
+            // Write the first map of the game to the game.
+            // In this case level is initially 1, so this adds (writes) map1 to the game.
+            this.map = this.game.add.tilemap("map" + this.level);
+
+            // Set up tiles for the map above
             this.map.addTilesetImage("tiles");
-    
-            this.layer = this.map.createLayer("Tile Layer 1");
-            this.layer.resizeWorld();
             this.map.setCollisionBetween(0,1,1);
-    
+
+            // Create a visual layer for the map above.
+            // This completely covers up everything from the previous layer.
+            this.layer = this.map.createLayer("Tile Layer 1");
+            console.log(this.map.currentLayer);
+            this.layer.resizeWorld();
+
+            // Player robot stuff
+            this.robotSize = 0.5;
             this.robot = this.game.add.sprite(228, 425, "robot");
             this.robot.animations.add("idle", [0,1,2,3,4,5,6,7,8,9],12,true);
             this.robot.animations.add("walk", [10,11,12,13,14,15,16,17],12,true);
             this.robot.animations.add("jump", [18,19,20,21,22,23,24,25],12,false);
             this.robot.scale.x = this.robotSize;
             this.robot.scale.y = this.robotSize;
-    
             this.robot.animations.play("idle");
             this.robot.anchor.set(0.5,0.5);
             this.game.physics.arcade.enable(this.robot);
             this.robot.body.allowGravity = false;
-            //this.robot.body.gravity.y = 100;
-            //this.robot.body.bounce.set(0.25);
             this.robot.body.collideWorldBounds = true;
             
+            // Setup game camera
             this.game.camera.follow(this.robot);
-            //cursors = game.input.keyboard.createCursorKeys();
-            this.map.setTileIndexCallback(3, this.reachedGoal, this);
 
-            //  The score
+            // Setup the score
             this.scoreText = this.game.add.text(16, 16, 'score: 0', { fontSize: 32, fill: '#000' });
 
-            //  Our controls.
+            // Setup winning condition
+            this.map.setTileIndexCallback(3, this.reachedGoal, this);
+
+            // Setup our controls
             this.cursors = this.game.input.keyboard.createCursorKeys();
-            
         }
 
 
@@ -174,6 +192,20 @@ namespace pxsim {
             if (this.cursors.down.isDown){
                 this.moveDown();
             }
+        }
+
+        // new added
+        reachedGoal(sprite: Phaser.Sprite, tile: Phaser.Tile){
+            if (this.collected == this.need){
+                // Increment level
+                this.level++;
+                this.createCurrLevel();
+            }
+        }
+
+        gotKey(sprite: Phaser.Sprite, tile: Phaser.Tile){
+            this.map.removeTile(tile.x, tile.y, this.layer);
+            this.collected++;
         }
 
 
@@ -234,18 +266,6 @@ namespace pxsim {
             //this.robot.body.velocity.x = -250;
         }
 
-        // new added
-        reachedGoal(sprite: Phaser.Sprite, tile: Phaser.Tile){
-            if (this.collected == this.need){
-                this.level++;
-                this.game.state.start("Board");
-            
-            }
-        }
 
-        gotKey(sprite: Phaser.Sprite, tile: Phaser.Tile){
-            this.map.removeTile(tile.x, tile.y, this.layer);
-            this.collected++;
-        }
     }
 }
