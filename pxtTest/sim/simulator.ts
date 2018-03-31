@@ -62,6 +62,11 @@ namespace pxsim {
 
         public move: Phaser.Tween;
 
+        public flipFlop_l: boolean;
+        public flipFlop_r: boolean;
+        public flipFlop_u: boolean;
+        public flipFlop_d: boolean;
+
         constructor() {
             super();
             this.bus = new EventBus(runtime);
@@ -168,30 +173,61 @@ namespace pxsim {
 
             this.robot.body.velocity.x = 0;
             this.robot.body.velocity.y = 0;
-    
-            if (this.cursors.left.isDown){
-                this.moveLeft();
+            
+            if (this.cursors.left.isDown && this.cursors.right.isUp){
+                if (!this.flipFlop_l){
+                    this.moveLeft();
+                    this.flipFlop_l = true;
+                }
+            }
+            else if (this.cursors.left.isUp){
+                this.flipFlop_l = false;
             }
 
-            else if (this.cursors.right.isDown){
-                this.moveRight();
+            
+            if (this.cursors.right.isDown && this.cursors.left.isUp){
+                if (!this.flipFlop_r){
+                    this.moveRight();
+                    this.flipFlop_r = true;
+                }
             }
-    
-            if (this.robot.body.velocity.x >=0){
-                this.robot.scale.x = this.robotSize;
+            else if (this.cursors.right.isUp){
+                this.flipFlop_r = false;
             }
-            else{
+            
+            
+            if (this.cursors.left.isDown){
                 this.robot.scale.x = -this.robotSize;
             }
+            else if (this.cursors.right.isDown){
+                this.robot.scale.x = this.robotSize;
+            }
+            
+            
     
             
-            if (this.cursors.up.isDown){
-                this.moveUp();      
+            if (this.cursors.up.isDown && this.cursors.down.isUp){
+                if (!this.flipFlop_u){
+                    this.moveUp();
+                    this.flipFlop_u = true;
+                }
+            }
+            else if (this.cursors.up.isUp){
+                this.flipFlop_u = false;
             }
           
-            if (this.cursors.down.isDown){
-                this.moveDown();
+            if (this.cursors.down.isDown && this.cursors.up.isUp){
+                if (!this.flipFlop_d){
+                    this.moveDown();
+                    this.flipFlop_d = true;
+                }
             }
+            else if (this.cursors.down.isUp){
+                this.flipFlop_d = false;
+            }
+            
+
+            
         }
 
         // new added
