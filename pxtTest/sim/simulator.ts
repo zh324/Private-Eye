@@ -254,52 +254,77 @@ namespace pxsim {
         }
 
         moveLeft() {
+            var marker_X = Phaser.Math.snapToFloor(Math.floor(this.robot.x), 64) / 64;
+            var marker_Y = Phaser.Math.snapToFloor(Math.floor(this.robot.y), 64) / 64;
+            var i = this.map.getLayer();
+            var tile_left = this.map.getTileLeft(i, marker_X, marker_Y);
             var left = this.game.add.tween(this.robot);
-            this.robot.animations.play("walk");
-            left.to({ x: '-64' }, 500, Phaser.Easing.Linear.None, true)
-            left.onComplete.add(function() {  
-                this.robot.animations.play("idle");
-                // Set robotMoving back to false so that the next movement can start.
-            }, this)
-            left.start();
-            //this.robot.body.velocity.x = -250;
-
+            this.robot.scale.x = -this.robotSize;
+            if (tile_left.index != 1){
+                this.robot.animations.play("walk");
+                left.to({ x: '-64' }, 500, Phaser.Easing.Linear.None, true)
+                left.onComplete.add(function() {  
+                    this.robot.animations.play("idle");
+                    // Set robotMoving back to false so that the next movement can start.
+                }, this)
+                left.start();
+                //this.robot.body.velocity.x = -250;
+            }
         }
 
         moveRight() {
+            var marker_X = Phaser.Math.snapToFloor(Math.floor(this.robot.x), 64) / 64;
+            var marker_Y = Phaser.Math.snapToFloor(Math.floor(this.robot.y), 64) / 64;
+            var i = this.map.getLayer();
+            var tile_right = this.map.getTileRight(i, marker_X, marker_Y);
             var right = this.game.add.tween(this.robot);
-            this.robot.animations.play("walk");
-            right.to({ x: '64' }, 500, Phaser.Easing.Linear.None, true)
-            right.onComplete.add(function() {  
-                this.robot.animations.play("idle");
-                // Set robotMoving back to false so that the next movement can start.
-            }, this)
-            right.start();
-            //this.robot.body.velocity.x = -250;
+            this.robot.scale.x = this.robotSize;
+            if (tile_right.index != 1){
+                this.robot.animations.play("walk");
+                right.to({ x: '64' }, 500, Phaser.Easing.Linear.None, true)
+                right.onComplete.add(function() {  
+                    this.robot.animations.play("idle");
+                    // Set robotMoving back to false so that the next movement can start.
+                }, this)
+                right.start();
+                //this.robot.body.velocity.x = -250;
+            }
         }
 
         moveUp() {
+            var marker_X = Phaser.Math.snapToFloor(Math.floor(this.robot.x), 64) / 64;
+            var marker_Y = Phaser.Math.snapToFloor(Math.floor(this.robot.y), 64) / 64;
+            var i = this.map.getLayer();
+            var tile_above = this.map.getTileAbove(i, marker_X, marker_Y);
             var up = this.game.add.tween(this.robot);
-            this.robot.animations.play("walk");
-            up.to({ y: '-64' }, 500, Phaser.Easing.Linear.None, true)
-            up.onComplete.add(function() {  
-                this.robot.animations.play("idle");
-                // Set robotMoving back to false so that the next movement can start.
-            }, this)
-            up.start();
-            //this.robot.body.velocity.x = -250;
+            if (tile_above.index != 1){
+                this.robot.animations.play("walk");
+                up.to({ y: '-64' }, 500, Phaser.Easing.Linear.None, true)
+                up.onComplete.add(function() {  
+                    this.robot.animations.play("idle");
+                    // Set robotMoving back to false so that the next movement can start.
+                }, this)
+                up.start();
+                //this.robot.body.velocity.x = -250;
+            }
         }
 
         moveDown() {
+            var marker_X = Phaser.Math.snapToFloor(Math.floor(this.robot.x), 64) / 64;
+            var marker_Y = Phaser.Math.snapToFloor(Math.floor(this.robot.y), 64) / 64;
+            var i = this.map.getLayer();
+            var tile_below = this.map.getTileBelow(i, marker_X, marker_Y);
             var down = this.game.add.tween(this.robot);
-            this.robot.animations.play("walk");
-            down.to({ y: '64' }, 500, Phaser.Easing.Linear.None, true)
-            down.onComplete.add(function() {  
-                this.robot.animations.play("idle");
-                // Set robotMoving back to false so that the next movement can start.
-            }, this)
-            down.start();
-            //this.robot.body.velocity.x = -250;
+            if (tile_below.index != 1){
+                this.robot.animations.play("walk");
+                down.to({ y: '64' }, 500, Phaser.Easing.Linear.None, true)
+                down.onComplete.add(function() {  
+                    this.robot.animations.play("idle");
+                    // Set robotMoving back to false so that the next movement can start.
+                }, this)
+                down.start();
+                //this.robot.body.velocity.x = -250;
+            }
         }
 
 
