@@ -48,18 +48,12 @@ namespace pxsim {
 
 		public cursors: Phaser.CursorKeys;
 		public spaceKey: any;
-		public fireButton: Phaser.Key;
-		public score: number = 0;
-		public scoreText: Phaser.Text;
-		//public stars: Phaser.Group;
 
 		public move: Phaser.Tween;
 
-		// User's code block
-		public startedNewLevel: boolean;
 
 		// Game logic
-		public level = 1;
+		public level: number;
 		public bombCount: any;
 		public need: number;
 		public collected: number;
@@ -74,7 +68,8 @@ namespace pxsim {
 		public robotY: any; // Tile, not pixel
 		public robotDirection: any;
 
-		public stepLimit = 100;
+		public stepLimit: number;
+		public pauseActions: boolean;
 
 		// Animation
 		public actionLog: string[];
@@ -83,7 +78,6 @@ namespace pxsim {
 		public tweenChain: Phaser.Tween[];
 		public animationSpeed: number;
 		public tweenChainRunning: boolean;
-		public pauseUpdateFunction: boolean;
 
 		//public currTween: any;
 
@@ -92,8 +86,6 @@ namespace pxsim {
 		public flipFlop_u: boolean;
 		public flipFlop_d: boolean;
 		public flipFlop_move: boolean;
-		public bulletTime: number;
-		public robotSize: number;
 
 
 		constructor() {
@@ -125,7 +117,7 @@ namespace pxsim {
 			this.game.load.image("tiles","assets/images/tiles.png");
 			
 			// Load in all maps that we have
-			for (var i = 0; i <= 4; i++) {
+			for (var i = 2; i <= 4; i++) {
 				//Load just adds a Tile Map data file to the current load queue.
 				//It doesn't seem to replace the initial load
 				this.game.load.tilemap("map"+i,"maps/map"+i+".json",null,Phaser.Tilemap.TILED_JSON);
@@ -142,14 +134,18 @@ namespace pxsim {
 			this.game.world.enableBody = true;
 			this.game.physics.arcade.gravity.y = 0;
 
-			this.bulletTime = 0;
 
 			// Setup our controls
 			this.cursors = this.game.input.keyboard.createCursorKeys();
 			this.spaceKey = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
 
+			// Configurations
+			this.stepLimit = 100;
+			this.pauseActions = false;
+
 			// Settings for each level
 			// Note: the first index is just a spacefiller since levels start from index 1
+			this.level = 2;
 			this.keyCount = [0, 0, 0, 0, 0];
 			this.robotStartingX = [0, 3, 3, 3, 3];
 			this.robotStartingY = [0, 6, 6, 6, 6];
@@ -159,30 +155,28 @@ namespace pxsim {
 
 			// Initialize starting game elements
 			this.collected = 0;
+			this.tweenChain = [];
 
 
 			this.createCurrLevel();
+			this.createLevelGraphics();
 		}
 
 
 		// Creates the current level with the map and all its associated elements.
 		createCurrLevel() {
-			// Set the startedNewLevel flag to true so that user's code will be rerun
-			this.startedNewLevel = true;
 
 			// Write a map from the JSON file to the current map variable.
 			this.map = this.game.add.tilemap("map" + this.level);
 			this.robotX = this.robotStartingX[this.level];
 			this.robotY = this.robotStartingY[this.level];
-			this.robotDirection = "up";
-
-			this.createLevelGraphics();
-
-			
+			this.robotDirection = "up";			
 		}
 
 
 		createLevelGraphics() {
+			console.log("createLevelGraphics " + this.level);
+
 			// Set up tiles for the map above
 			this.map.addTilesetImage("tiles");
 
@@ -197,13 +191,12 @@ namespace pxsim {
 			this.actionLog = [];
 			this.xHistory = [];
 			this.yHistory = [];
-			this.tweenChain = [];
-			this.pauseUpdateFunction = false;
 			this.tweenChainRunning = false;
 
 			// Player robot stuff
-			this.animationSpeed = 250; // Time in ms it takes to perform each animation (the smaller the faster).
+			this.animationSpeed = 500; // Time in ms it takes to perform each animation (the smaller the faster).
 			var robotFps = 4000/this.animationSpeed;
+
 
 			this.robot = this.game.add.sprite(this.robotX*64, this.robotY*64, "robot"); // Starting position
 			this.robot.animations.add("faceDown", [0],robotFps,false);
@@ -217,25 +210,21 @@ namespace pxsim {
 
 			this.robot.animations.play("faceUp");
 
-
-
-			this.game.physics.arcade.enable(this.robot);
-			this.robot.body.allowGravity = false;
 			this.robot.body.collideWorldBounds = true;
 
 			
 			// Setup game camera
 			this.game.camera.follow(this.robot);
 
-			// Setup the score
-			this.scoreText = this.game.add.text(16, 16, 'Level ' + this.level, { fontSize: 32, fill: '#fff' });
+			// Write the current level text
+			this.game.add.text(16, 16, 'Level ' + this.level, { fontSize: 24, fill: '#fff' });
 
 			// State Text
 			this.stateText = this.game.add.text(this.game.world.centerX,this.game.world.centerY,' ', { font: '48px Arial', fill: 'black' });
 			this.stateText.anchor.setTo(0.5, 0.5);
 			this.stateText.visible = false;
 
-			this.map.setTileIndexCallback(3, this.hello, this);
+			this.map.setTileIndexCallback(3, this.createLevelGraphics, this);
 		}
 
 
@@ -244,6 +233,7 @@ namespace pxsim {
 		update() {
 
 			// console.log(this.actionLog);
+
 
 			
 			//this.startTweenChain();
@@ -307,6 +297,8 @@ namespace pxsim {
 			// 	this.flipFlop_move = false;
 			// }
 
+
+
 		}
 
 
@@ -321,6 +313,7 @@ namespace pxsim {
 					currTween.to({}, this.animationSpeed, Phaser.Easing.Linear.None, false)
 					currTween.onStart.add(function() {  
 						this.robot.animations.play("faceLeft");
+						
 					}, this)
 				}
 
@@ -353,6 +346,9 @@ namespace pxsim {
 					}, this)
 					currTween.onComplete.add(function() {  
 						this.robot.animations.play("faceLeft");
+						// Checks for collision between robot and layer.
+						// This is needed for the collision callback to work.
+						this.game.physics.arcade.collide(this.robot, this.layer);
 					}, this)
 				}
 
@@ -363,6 +359,9 @@ namespace pxsim {
 					}, this)
 					currTween.onComplete.add(function() {  
 						this.robot.animations.play("faceRight");
+						// Checks for collision between robot and layer.
+						// This is needed for the collision callback to work.
+						this.game.physics.arcade.collide(this.robot, this.layer);
 					}, this)
 				}
 
@@ -373,6 +372,9 @@ namespace pxsim {
 					}, this)
 					currTween.onComplete.add(function() {  
 						this.robot.animations.play("faceUp");
+						// Checks for collision between robot and layer.
+						// This is needed for the collision callback to work.
+						this.game.physics.arcade.collide(this.robot, this.layer);
 					}, this)
 				}
 
@@ -383,6 +385,9 @@ namespace pxsim {
 					}, this)
 					currTween.onComplete.add(function() {  
 						this.robot.animations.play("faceDown");
+						// Checks for collision between robot and layer.
+						// This is needed for the collision callback to work.
+						this.game.physics.arcade.collide(this.robot, this.layer);
 					}, this)
 				}			
 
@@ -411,6 +416,7 @@ namespace pxsim {
 				this.tweenChain[this.tweenChain.length-1].onComplete.add(function() {  
 					this.tweenChainRunning = false;
 					this.tweenChain = [];
+					this.pauseActions = false;
 				}, this)
 				
 				// Clear all animation queues and data structures
@@ -420,10 +426,13 @@ namespace pxsim {
 
 
 		wonLevel() {
+			this.pauseActions = true;
 			console.log("Won level " + this.level);
 			this.level++;
+			this.createCurrLevel();
 			this.addAllActionsToTweenChain();
 			this.startTweenChain();
+
 		}
 
 
@@ -490,7 +499,14 @@ namespace pxsim {
 			
 			
 		}
+
+
+
+
 		hello (sprite: Phaser.Sprite, tile: Phaser.Tile) {
+			console.log("Hello");
+			console.log("Hello");
+			console.log("Hello");
 			console.log("Hello");
 		}
 
@@ -510,3 +526,13 @@ namespace pxsim {
 
 	}
 }
+
+
+
+
+
+
+
+
+
+
