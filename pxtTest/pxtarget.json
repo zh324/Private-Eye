@@ -20,7 +20,7 @@
       "listsBlocks": true 
     },
     "simulator": {
-        "autoRun": true
+        "autoRun": false
     },
     "appTheme": {
         "logoUrl": "https://github.com/Microsoft/pxt-phaser-ce",
