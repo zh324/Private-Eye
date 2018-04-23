@@ -63,6 +63,7 @@ namespace pxsim {
 		public keyCount: any;
 		public robotStartingX: any;
 		public robotStartingY: any;
+		public robotStartingDirection: any;
 
 		public robotX: any; // Tile, not pixel
 		public robotY: any; // Tile, not pixel
@@ -117,7 +118,7 @@ namespace pxsim {
 			this.game.load.image("tiles","assets/images/tiles.png");
 			
 			// Load in all maps that we have
-			for (var i = 2; i <= 4; i++) {
+			for (var i = 1; i <= 4; i++) {
 				//Load just adds a Tile Map data file to the current load queue.
 				//It doesn't seem to replace the initial load
 				this.game.load.tilemap("map"+i,"maps/map"+i+".json",null,Phaser.Tilemap.TILED_JSON);
@@ -145,11 +146,11 @@ namespace pxsim {
 
 			// Settings for each level
 			// Note: the first index is just a spacefiller since levels start from index 1
-			this.level = 2;
+			this.level = 1;
 			this.keyCount = [0, 0, 0, 0, 0];
 			this.robotStartingX = [0, 3, 3, 3, 3];
 			this.robotStartingY = [0, 6, 6, 6, 6];
-			this.robotDirection = "up";
+			this.robotStartingDirection = ["up","up","up","up","up"];
 			this.need = this.keyCount[this.level];
 
 
@@ -170,7 +171,7 @@ namespace pxsim {
 			this.map = this.game.add.tilemap("map" + this.level);
 			this.robotX = this.robotStartingX[this.level];
 			this.robotY = this.robotStartingY[this.level];
-			this.robotDirection = "up";			
+			this.robotDirection = this.robotStartingDirection[this.level];		
 		}
 
 
@@ -208,7 +209,7 @@ namespace pxsim {
 			this.robot.animations.add("moveRight", [8,9,10,11],robotFps,true);
 			this.robot.animations.add("moveUp", [12,13,14,15],robotFps,true);
 
-			this.robot.animations.play("faceUp");
+			this.robot.animations.play("face"+this.capitalizeFirstLetter(this.robotDirection));
 
 			this.robot.body.collideWorldBounds = true;
 
@@ -524,6 +525,11 @@ namespace pxsim {
 			this.yHistory.push(this.robotY);
 		}
 
+
+
+		capitalizeFirstLetter(str: string) {
+    		return str.charAt(0).toUpperCase() + str.slice(1);
+		}
 	}
 }
 
