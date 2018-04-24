@@ -298,12 +298,6 @@ namespace pxsim {
             {
                 this.fireBullet();
             }
-
-
-
-            
-
-            
         }
 
         // new added
