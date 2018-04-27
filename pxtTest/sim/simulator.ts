@@ -51,16 +51,21 @@ namespace pxsim {
 
 		public move: Phaser.Tween;
 
+		// Game config
+		public levelCount: number;
+
+		// User code processing
+		public stepCount: number;
+		public highestLevelReached: number;
+		public RanAllLevels: number;
+
+		public updateCounter: number;
+		public pauseUpdate: boolean;
 
 		// Game logic
-		public level: number;
-		public bombCount: any;
-		public need: number;
-		public collected: number;
 		
 		public map: any;
 		public layer: any;
-		public keyCount: any;
 		public robotStartingX: any;
 		public robotStartingY: any;
 		public robotStartingDirection: any;
@@ -69,19 +74,23 @@ namespace pxsim {
 		public robotY: any; // Tile, not pixel
 		public robotDirection: any;
 
+		public results: any;
+
 		public stepLimit: number;
-		public pauseActions: boolean;
 
 		// Animation
-		public actionLog: string[];
-		public xHistory: number[];
-		public yHistory: number[];
+		public currAnimatedLevel: number;
+
+		public actionLog: any;
+		public xHistory: any;
+		public yHistory: any;
+
 		public tweenChain: Phaser.Tween[];
-		public animationSpeed: number;
+		public walkSpeed: number;
+		public turnSpeed: number;
 		public tweenChainRunning: boolean;
 
-		//public currTween: any;
-
+		// Flip flops for keyboard controls
 		public flipFlop_l: boolean;
 		public flipFlop_r: boolean;
 		public flipFlop_u: boolean;
@@ -112,13 +121,15 @@ namespace pxsim {
 
 
 		preload() {
-			console.log("Preload");
+
 			this.game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
 			this.game.load.spritesheet("robot", "assets/images/GirlSprite.png", 64, 64, 16);
 			this.game.load.image("tiles","assets/images/tiles.png");
 			
 			// Load in all maps that we have
-			for (var i = 1; i <= 4; i++) {
+			this.levelCount = 4;
+
+			for (var i = 1; i <= this.levelCount; i++) {
 				//Load just adds a Tile Map data file to the current load queue.
 				//It doesn't seem to replace the initial load
 				this.game.load.tilemap("map"+i,"maps/map"+i+".json",null,Phaser.Tilemap.TILED_JSON);
@@ -128,13 +139,15 @@ namespace pxsim {
 		// Create initial variables of the game.
 		// Called once at start of game load.
 		create() {
-			console.log("Create");
-			
+
 			// Setup game physics
 			this.game.physics.startSystem(Phaser.Physics.ARCADE);
 			this.game.world.enableBody = true;
 			this.game.physics.arcade.gravity.y = 0;
 
+			// Game frame counter
+			this.updateCounter = 0;
+			this.pauseUpdate = false;
 
 			// Setup our controls
 			this.cursors = this.game.input.keyboard.createCursorKeys();
@@ -142,64 +155,89 @@ namespace pxsim {
 
 			// Configurations
 			this.stepLimit = 100;
-			this.pauseActions = false;
 
 			// Settings for each level
 			// Note: the first index is just a spacefiller since levels start from index 1
-			this.level = 1;
-			this.keyCount = [0, 0, 0, 0, 0];
-			this.robotStartingX = [0, 3, 3, 3, 3];
-			this.robotStartingY = [0, 6, 6, 6, 6];
-			this.robotStartingDirection = ["up","up","up","up","up"];
-			this.need = this.keyCount[this.level];
+			this.stepCount = 0;
+
+			this.robotStartingX = [null, 3, 3, 3, 3];
+			this.robotStartingY = [null, 6, 6, 6, 6];
+			this.robotStartingDirection = [null,"up","up","up","up"];
+
+			this.map = [null];
+			this.robotX = [null];
+			this.robotY = [null];
+			this.robotDirection = [null];
+			this.results = [null];
+
+			this.actionLog = [null];
+			this.xHistory = [null];
+			this.yHistory = [null];
+
+			// Initialize arrays for all levels
+			for (var level = 1; level <= this.levelCount; level++) {
+				this.map.push(this.game.add.tilemap("map" + level));
+				this.robotX.push(this.robotStartingX[level]);
+				this.robotY.push(this.robotStartingY[level]);
+				this.robotDirection.push(this.robotStartingDirection[level]);
+				this.results.push(0);
+
+				this.actionLog.push([]);
+				this.xHistory.push([]);
+				this.yHistory.push([]);
+			}
+
 
 
 			// Initialize starting game elements
-			this.collected = 0;
 			this.tweenChain = [];
 
-
-			this.createCurrLevel();
-			this.createLevelGraphics();
 		}
 
 
-		// Creates the current level with the map and all its associated elements.
-		createCurrLevel() {
 
-			// Write a map from the JSON file to the current map variable.
-			this.map = this.game.add.tilemap("map" + this.level);
-			this.robotX = this.robotStartingX[this.level];
-			this.robotY = this.robotStartingY[this.level];
-			this.robotDirection = this.robotStartingDirection[this.level];		
+
+		// Updates internal game state based on the actions of the player.
+		// This function can be run independently of the game's graphics.
+		// Default frequency is 60 times / sec
+		update() {
+			if (this.pauseUpdate == false) {
+				
+				this.updateCounter++;
+
+				// Once counter reaches 2 secs, stop running user's code and begin the game
+				if (this.updateCounter == 120) {
+					console.log("Results: ", this.results);
+					this.animateAllLevels(1);
+					this.updateCounter = 0;
+					this.pauseUpdate = true;
+
+				}
+			}
 		}
 
 
-		createLevelGraphics() {
-			console.log("createLevelGraphics " + this.level);
+		animateLevel(level: number, animateNextLevelIfWon: boolean) {
 
-			// Set up tiles for the map above
-			this.map.addTilesetImage("tiles");
+			// Update global "currently animated level" variable
+			this.currAnimatedLevel = level;
+
+			// Set up tiles for the current level's map
+			this.map[level].addTilesetImage("tiles");
 
 			// Create a visual layer for the map above.
 			// This completely covers up everything from the previous layer.
-			this.layer = this.map.createLayer("Tile Layer 1");
+			this.layer = this.map[level].createLayer("Tile Layer 1");
 
 			//this.layer.resizeWorld();
 
-			// Animation Stuff
-			// These are cleared everytime a new level is loaded
-			this.actionLog = [];
-			this.xHistory = [];
-			this.yHistory = [];
-			this.tweenChainRunning = false;
-
 			// Player robot stuff
-			this.animationSpeed = 500; // Time in ms it takes to perform each animation (the smaller the faster).
-			var robotFps = 4000/this.animationSpeed;
+			this.walkSpeed = 500; // Time in ms it takes to perform each animation (the lower the faster).
+			this.turnSpeed = 500;
+			var robotFps = 4000/this.walkSpeed;
 
 
-			this.robot = this.game.add.sprite(this.robotX*64, this.robotY*64, "robot"); // Starting position
+			this.robot = this.game.add.sprite(this.robotStartingX[level]*64, this.robotStartingY[level]*64, "robot"); // Starting position
 			this.robot.animations.add("faceDown", [0],robotFps,false);
 			this.robot.animations.add("faceLeft", [4],robotFps,false);
 			this.robot.animations.add("faceRight", [8],robotFps,false);
@@ -209,139 +247,81 @@ namespace pxsim {
 			this.robot.animations.add("moveRight", [8,9,10,11],robotFps,true);
 			this.robot.animations.add("moveUp", [12,13,14,15],robotFps,true);
 
-			this.robot.animations.play("face"+this.capitalizeFirstLetter(this.robotDirection));
+			this.robot.animations.play("face"+this.capitalizeFirstLetter(this.robotDirection[level]));
 
 			this.robot.body.collideWorldBounds = true;
-
 			
 			// Setup game camera
 			this.game.camera.follow(this.robot);
 
 			// Write the current level text
-			this.game.add.text(16, 16, 'Level ' + this.level, { fontSize: 24, fill: '#fff' });
+			this.game.add.text(16, 16, 'Level ' + level, { fontSize: 24, fill: '#fff' });
 
 			// State Text
 			this.stateText = this.game.add.text(this.game.world.centerX,this.game.world.centerY,' ', { font: '48px Arial', fill: 'black' });
 			this.stateText.anchor.setTo(0.5, 0.5);
 			this.stateText.visible = false;
 
-			this.map.setTileIndexCallback(3, this.createLevelGraphics, this);
+
+			if (animateNextLevelIfWon) {
+				this.map[level].setTileIndexCallback(3, this.nextLevel, this);
+			}
+
+			else {
+				this.map[level].setTileIndexCallback(3, this.doNothing, this);
+			}
+
+			// Start animating this level
+			this.buildTweenChain(level);
+			this.startTweenChain();
+			
 		}
 
-
-		// Updates internal game state based on the actions of the player.
-		// This function can be run independently of the game's graphics.
-		update() {
-
-			// console.log(this.actionLog);
-
-
-			
-			//this.startTweenChain();
-
-			
-			// // Check for movement commands
-			// if (this.cursors.left.isDown && this.cursors.right.isUp){
-			// 	if (!this.flipFlop_l){
-			// 		this.faceLeft();
-			// 		this.flipFlop_l = true;
-			// 		this.printRobot();
-			// 	}
-			// }
-			// else if (this.cursors.left.isUp){
-			// 	this.flipFlop_l = false;
-			// }
-
-			
-			// if (this.cursors.right.isDown && this.cursors.left.isUp){
-			// 	if (!this.flipFlop_r){
-			// 		this.faceRight();
-			// 		this.flipFlop_r = true;
-			// 		this.printRobot();
-			// 	}
-			// }
-			// else if (this.cursors.right.isUp){
-			// 	this.flipFlop_r = false;
-			// }
-			
-			
-			// if (this.cursors.up.isDown  && this.cursors.down.isUp){
-			// 	if (!this.flipFlop_u){
-			// 		this.faceUp();
-			// 		this.flipFlop_u = true;
-			// 		this.printRobot();
-			// 	}
-			// }
-			// else if (this.cursors.up.isUp){
-			// 	this.flipFlop_u = false;
-			// }
-		  
-			// if (this.cursors.down.isDown && this.cursors.up.isUp){
-			// 	if (!this.flipFlop_d){
-			// 		this.faceDown();
-			// 		this.flipFlop_d = true;
-			// 		this.printRobot();
-			// 	}
-			// }
-			// else if (this.cursors.down.isUp){
-			// 	this.flipFlop_d = false;
-			// }
-
-			// if (this.spaceKey.isDown){
-			// 	if (!this.flipFlop_move){
-			// 		this.moveForward();
-			// 		this.flipFlop_move = true;
-			// 		this.printRobot();
-			// 	}
-			// }
-			// else if (this.spaceKey.isUp){
-			// 	this.flipFlop_move = false;
-			// }
-
-
-
+		nextLevel() {
+			this.animateLevel(this.currAnimatedLevel+1, true);
 		}
 
+		doNothing() {}
 
 
-		addAllActionsToTweenChain() {
+		buildTweenChain(level: number) {
+			this.tweenChain = [];
 
-			for (var i = 0; i < this.actionLog.length; i++) {
+			for (var i = 0; i < this.actionLog[level].length; i++) {
 
 				var currTween = this.game.add.tween(this.robot);
 
-				if (this.actionLog[i] == "faceLeft") {
-					currTween.to({}, this.animationSpeed, Phaser.Easing.Linear.None, false)
+				if (this.actionLog[level][i] == "faceLeft") {
+					currTween.to({}, this.turnSpeed, Phaser.Easing.Linear.None, false)
 					currTween.onStart.add(function() {  
 						this.robot.animations.play("faceLeft");
-						
 					}, this)
 				}
 
 
-				else if (this.actionLog[i] == "faceRight") {
-					currTween.to({}, this.animationSpeed, Phaser.Easing.Linear.None, false)
+				else if (this.actionLog[level][i] == "faceRight") {
+					currTween.to({}, this.turnSpeed, Phaser.Easing.Linear.None, false)
 					currTween.onStart.add(function() {  
 						this.robot.animations.play("faceRight");
 					}, this)
 				}
 
-				else if (this.actionLog[i] == "faceUp") {
-					currTween.to({}, this.animationSpeed, Phaser.Easing.Linear.None, false)
+				else if (this.actionLog[level][i] == "faceUp") {
+					currTween.to({}, this.turnSpeed, Phaser.Easing.Linear.None, false)
 					currTween.onStart.add(function() {  
 						this.robot.animations.play("faceUp");
 					}, this)
 				}
 
-				else if (this.actionLog[i] == "faceDown") {
-					currTween.to({}, this.animationSpeed, Phaser.Easing.Linear.None, false)
+				else if (this.actionLog[level][i] == "faceDown") {
+					currTween.to({}, this.turnSpeed, Phaser.Easing.Linear.None, false)
 					currTween.onStart.add(function() {  
 						this.robot.animations.play("faceDown");
 					}, this)
 				}	
 
-				else if (this.actionLog[i] == "moveLeft") {
-					currTween.to({ x: this.xHistory[i]*64 }, this.animationSpeed, Phaser.Easing.Linear.None, false)
+				else if (this.actionLog[level][i] == "moveLeft") {
+					currTween.to({ x: this.xHistory[level][i]*64 }, this.walkSpeed, Phaser.Easing.Linear.None, false)
 					currTween.onStart.add(function() {  
 						this.robot.animations.play("moveLeft");
 					}, this)
@@ -353,8 +333,8 @@ namespace pxsim {
 					}, this)
 				}
 
-				else if (this.actionLog[i] == "moveRight") {
-					currTween.to({ x: this.xHistory[i]*64 }, this.animationSpeed, Phaser.Easing.Linear.None, false)
+				else if (this.actionLog[level][i] == "moveRight") {
+					currTween.to({ x: this.xHistory[level][i]*64 }, this.walkSpeed, Phaser.Easing.Linear.None, false)
 					currTween.onStart.add(function() {  
 						this.robot.animations.play("moveRight");
 					}, this)
@@ -366,8 +346,8 @@ namespace pxsim {
 					}, this)
 				}
 
-				else if (this.actionLog[i] == "moveUp") {
-					currTween.to({ y: this.yHistory[i]*64 }, this.animationSpeed, Phaser.Easing.Linear.None, false)
+				else if (this.actionLog[level][i] == "moveUp") {
+					currTween.to({ y: this.yHistory[level][i]*64 }, this.walkSpeed, Phaser.Easing.Linear.None, false)
 					currTween.onStart.add(function() {  
 						this.robot.animations.play("moveUp");
 					}, this)
@@ -379,8 +359,8 @@ namespace pxsim {
 					}, this)
 				}
 
-				else if (this.actionLog[i] == "moveDown") {
-					currTween.to({ y: this.yHistory[i]*64 }, this.animationSpeed, Phaser.Easing.Linear.None, false)
+				else if (this.actionLog[level][i] == "moveDown") {
+					currTween.to({ y: this.yHistory[level][i]*64 }, this.walkSpeed, Phaser.Easing.Linear.None, false)
 					currTween.onStart.add(function() {  
 						this.robot.animations.play("moveDown");
 					}, this)
@@ -399,108 +379,102 @@ namespace pxsim {
 
 			}
 
-			// Clear the action queue since it has all been added to the tween chain.
-			this.actionLog = [];
-			this.xHistory = [];
-			this.yHistory = [];
-
-
 		}
 
 		startTweenChain() {
+			
 			if (this.tweenChain.length > 0) {
 
 				// Start animation chain
 				this.tweenChain[0].start();
-				this.tweenChainRunning = true;
 
-				this.tweenChain[this.tweenChain.length-1].onComplete.add(function() {  
-					this.tweenChainRunning = false;
-					this.tweenChain = [];
-					this.pauseActions = false;
-				}, this)
-				
-				// Clear all animation queues and data structures
-				
 			}
 		}
 
 
-		wonLevel() {
-			this.pauseActions = true;
-			console.log("Won level " + this.level);
-			this.level++;
-			this.createCurrLevel();
-			this.addAllActionsToTweenChain();
-			this.startTweenChain();
-
+		animateAllLevels(startingLevel: number) {
+			this.animateLevel(startingLevel, true);
 		}
 
 
 		faceLeft() {
-			this.robotDirection = "left";
-			this.logAction("faceLeft");
+			for (var level = 1; level <= this.levelCount; level++) {
+				if (this.results[level] == 0) {
+					this.robotDirection[level] = "left";
+					this.logAction("faceLeft", level);
+				}
+			}
 		}
 
 		faceRight() {
-			this.robotDirection = "right";
-			this.logAction("faceRight");
+			for (var level = 1; level <= this.levelCount; level++) {
+				if (this.results[level] == 0) {
+					this.robotDirection[level] = "right";
+					this.logAction("faceRight", level);
+				}
+			}
 		}		
 
 		faceUp() {
-			this.robotDirection = "up";
-			this.logAction("faceUp");
+			for (var level = 1; level <= this.levelCount; level++) {
+				if (this.results[level] == 0) {
+					this.robotDirection[level] = "up";
+					this.logAction("faceUp", level);
+				}
+			}
 		}		
 
 		faceDown() {
-			this.robotDirection = "down";
-			this.logAction("faceDown");
+			for (var level = 1; level <= this.levelCount; level++) {
+				if (this.results[level] == 0) {
+					this.robotDirection[level] = "down";
+					this.logAction("faceDown", level);
+				}
+			}
 		}
 
 		moveForward() {
-			
-			if (this.robotDirection == "left") {
-				var tileLeft = this.map.getTileLeft(this.map.getLayer(), this.robotX, this.robotY);
-				if (this.robotX > 0 && tileLeft.index != 1){
-					this.robotX--;
-					this.logAction("moveLeft");
+			for (var level = 1; level <= this.levelCount; level++) {
+				if (this.results[level] == 0) {
+					if (this.robotDirection[level] == "left") {
+						var tileLeft = this.map[level].getTileLeft(this.map[level].getLayer(), this.robotX[level], this.robotY[level]);
+						if (this.robotX[level] > 0 && tileLeft.index != 1){
+							this.robotX[level]--;
+							this.logAction("moveLeft", level);
+						}
+					}
+
+					else if (this.robotDirection[level] == "right") {
+						var tileRight = this.map[level].getTileRight(this.map[level].getLayer(), this.robotX[level], this.robotY[level]);
+						if (tileRight.index != 1){ // add size of map factor
+							this.robotX[level]++;
+							this.logAction("moveRight", level);
+						}
+					}
+
+					else if (this.robotDirection[level] == "up") {
+						var tileAbove = this.map[level].getTileAbove(this.map[level].getLayer(), this.robotX[level], this.robotY[level]);
+						if (this.robotY[level] > 0 && tileAbove.index != 1){
+							this.robotY[level]--;
+							this.logAction("moveUp",level);
+						}
+					}
+
+					else if (this.robotDirection[level] == "down") {
+						var tileBelow = this.map[level].getTileBelow(this.map[level].getLayer(), this.robotX[level], this.robotY[level]);
+						if (tileBelow.index != 1){ // add size of map factor
+							this.robotY[level]++;
+							this.logAction("moveDown", level);
+						}
+					}
+
+					// Check if won
+					if (this.map[level].getTile(this.robotX[level], this.robotY[level], this.map[level].getLayer()).index == 3) {
+						this.results[level] = 1;
+					}
 				}
-			}
-
-			else if (this.robotDirection == "right") {
-				var tileRight = this.map.getTileRight(this.map.getLayer(), this.robotX, this.robotY);
-				if (tileRight.index != 1){ // add size of map factor
-					this.robotX++;
-					this.logAction("moveRight");
-				}
-			}
-
-			else if (this.robotDirection == "up") {
-				var tileAbove = this.map.getTileAbove(this.map.getLayer(), this.robotX, this.robotY);
-				if (this.robotY > 0 && tileAbove.index != 1){
-					this.robotY--;
-					this.logAction("moveUp");
-				}
-			}
-
-			else if (this.robotDirection == "down") {
-				var tileBelow = this.map.getTileBelow(this.map.getLayer(), this.robotX, this.robotY);
-				if (tileBelow.index != 1){ // add size of map factor
-					this.robotY++;
-					this.logAction("moveDown");
-				}
-			}
-
-			// Check if won
-			if (this.map.getTile(this.robotX, this.robotY, this.map.getLayer()).index == 3
-				&& this.collected == this.need) {
-				this.wonLevel();
-			}
-
-			
-			
+			}		
 		}
-
 
 
 
@@ -512,19 +486,20 @@ namespace pxsim {
 		}
 
 
-		printRobot() {
-			console.log("x: " + this.robotX);
-			console.log("y: " + this.robotY);
-			console.log("Tile Type: " + this.map.getTile(this.robotX, this.robotY, this.map.getLayer()).index);
-			console.log(this.actionLog);
+		printLevel(level: number) {
+			console.log("Won level " + level);
+			console.log("robotCurrentX: " + this.robotX[level]);
+			console.log("robotCurrentY: " + this.robotY[level]);
+			console.log("actionLog: " + this.actionLog[level]);
+			console.log("xHistory: " + this.xHistory[level]);
+			console.log("yHistory: " + this.yHistory[level]);
 		}
 
-		logAction(action: string) {
-			this.actionLog.push(action);
-			this.xHistory.push(this.robotX);
-			this.yHistory.push(this.robotY);
+		logAction(action: string, level: number) {
+			this.actionLog[level].push(action);
+			this.xHistory[level].push(this.robotX[level]);
+			this.yHistory[level].push(this.robotY[level]);
 		}
-
 
 
 		capitalizeFirstLetter(str: string) {

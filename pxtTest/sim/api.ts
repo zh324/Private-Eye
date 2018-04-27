@@ -11,7 +11,6 @@ namespace pxsim.Robot {
     export function faceUpAsync() {
         // Move the robot forward
         board().faceUp();
-        board().printRobot();
         return Promise.delay(100)
     }
 
@@ -21,7 +20,6 @@ namespace pxsim.Robot {
     //% blockId=faceDown block="face down"
     export function faceDownAsync() {
         board().faceDown();
-        board().printRobot();
         return Promise.delay(100)
     }
 
@@ -31,7 +29,6 @@ namespace pxsim.Robot {
     //% blockId=faceLeft block="face left"
     export function faceLeftAsync() {
         board().faceLeft();
-        board().printRobot();
         return Promise.delay(100)
     }
 
@@ -41,7 +38,6 @@ namespace pxsim.Robot {
     //% blockId=faceRight block="face right"
     export function faceRightAsync() {
         board().faceRight();
-        board().printRobot();
         return Promise.delay(100)
     }
 
@@ -51,7 +47,6 @@ namespace pxsim.Robot {
     //% blockId=moveForward block="walk forward"
     export function moveForwardAsync() {
         board().moveForward();
-        board().printRobot();
         return Promise.delay(100)
     }
 
