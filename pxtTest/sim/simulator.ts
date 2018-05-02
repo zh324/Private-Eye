@@ -1,8 +1,7 @@
 /// <reference path="../node_modules/pxt-core/built/pxtsim.d.ts"/>
 /// <reference path="../node_modules/phaser-ce/typescript/phaser.d.ts" />
-//
-//declare let Phaser: any;
 
+let states = ["locked", "locked", "locked", "locked", "locked", "locked", "locked", "locked", "locked", "locked", "locked"];
 
 namespace pxsim {
 
@@ -49,8 +48,6 @@ namespace pxsim {
 		public cursors: Phaser.CursorKeys;
 		public spaceKey: any;
 
-		public move: Phaser.Tween;
-
 		// Game config
 		public levelCount: number;
 
@@ -66,17 +63,32 @@ namespace pxsim {
 		
 		public map: any;
 		public layer: any;
-		public robotStartingX: any;
-		public robotStartingY: any;
-		public robotStartingDirection: any;
+		public robotStartingX: any; //array
+		public robotStartingY: any; //array
+		public robotStartingDirection: any; //array
 
+		public failOnce : boolean;
+
+		//array
 		public robotX: any; // Tile, not pixel
 		public robotY: any; // Tile, not pixel
 		public robotDirection: any;
-
+		
+		//array
 		public results: any;
 
-		public stepLimit: number;
+		//array: block limit for each level
+		public blockLimit: number;
+
+		/**
+		 * level state:
+		 * Stop at first failed level
+		 * locked - never reached - don't play animation
+		 * unclocked - reached before - don't play animation
+		 * pass - play animation
+		 * fail - fail for the first time - play animation - it's where the game will
+		**/
+		// public states: any;
 
 		// Animation
 		public currAnimatedLevel: number;
@@ -97,10 +109,34 @@ namespace pxsim {
 		public flipFlop_d: boolean;
 		public flipFlop_move: boolean;
 
+		//html buttons
+		public button1: HTMLInputElement;
+		public button2: HTMLInputElement;
+		public button3: HTMLInputElement;
+		public button4: HTMLInputElement;
+		public button5: HTMLInputElement;
+		public button6: HTMLInputElement;
+		public button7: HTMLInputElement;
+		public button8: HTMLInputElement;
+		public button9: HTMLInputElement;
+		public button10: HTMLInputElement;
+
 
 		constructor() {
 			super();
 			this.bus = new EventBus(runtime);
+			this.button1 = <HTMLInputElement><any>document.getElementById("level1");
+			this.button2 = <HTMLInputElement><any>document.getElementById("level2");
+			this.button3 = <HTMLInputElement><any>document.getElementById("level3");
+			this.button4 = <HTMLInputElement><any>document.getElementById("level4");
+			this.button5 = <HTMLInputElement><any>document.getElementById("level5");
+			this.button6 = <HTMLInputElement><any>document.getElementById("level6");
+			this.button7 = <HTMLInputElement><any>document.getElementById("level7");
+			this.button8 = <HTMLInputElement><any>document.getElementById("level8");
+			this.button9 = <HTMLInputElement><any>document.getElementById("level9");
+			this.button10 = <HTMLInputElement><any>document.getElementById("level10");
+
+			this.failOnce = false;
 		}
 
 		initAsync(msg: pxsim.SimulatorRunMessage): Promise<void> {
@@ -111,14 +147,13 @@ namespace pxsim {
 			});
 			let that = this;
 			return new Promise<void>((resolve, reject) => {
-				this.game = new Phaser.Game(448, 448, Phaser.AUTO, '', {
+				this.game = new Phaser.Game(448, 702, Phaser.AUTO, '', {
 					preload: () => this.preload(),
 					create: () => {this.create(); resolve();},
 					update: () => this.update()
 				});
 			});
 		}
-
 
 		preload() {
 
@@ -127,12 +162,13 @@ namespace pxsim {
 			this.game.load.image("tiles","assets/images/tiles.png");
 			
 			// Load in all maps that we have
-			this.levelCount = 4;
+			this.levelCount = 7;
+			this.highestLevelReached = 0;
 
 			for (var i = 1; i <= this.levelCount; i++) {
 				//Load just adds a Tile Map data file to the current load queue.
 				//It doesn't seem to replace the initial load
-				this.game.load.tilemap("map"+i,"maps/map"+i+".json",null,Phaser.Tilemap.TILED_JSON);
+				this.game.load.tilemap("level"+i,"maps/level"+i+".json",null,Phaser.Tilemap.TILED_JSON);
 			}
 		}
 
@@ -154,15 +190,15 @@ namespace pxsim {
 			this.spaceKey = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
 
 			// Configurations
-			this.stepLimit = 100;
+			this.blockLimit = 100;
 
 			// Settings for each level
 			// Note: the first index is just a spacefiller since levels start from index 1
 			this.stepCount = 0;
 
-			this.robotStartingX = [null, 3, 3, 3, 3];
-			this.robotStartingY = [null, 6, 6, 6, 6];
-			this.robotStartingDirection = [null,"up","up","up","up"];
+			this.robotStartingX = [null, 3, 3, 3, 3, 3, 3, 3];
+			this.robotStartingY = [null, 5, 6, 6, 10, 10, 10, 10];
+			this.robotStartingDirection = [null,"up","up","left","up","up","up","up","up","up","up"];
 
 			this.map = [null];
 			this.robotX = [null];
@@ -176,7 +212,7 @@ namespace pxsim {
 
 			// Initialize arrays for all levels
 			for (var level = 1; level <= this.levelCount; level++) {
-				this.map.push(this.game.add.tilemap("map" + level));
+				this.map.push(this.game.add.tilemap("level" + level));
 				this.robotX.push(this.robotStartingX[level]);
 				this.robotY.push(this.robotStartingY[level]);
 				this.robotDirection.push(this.robotStartingDirection[level]);
@@ -187,15 +223,27 @@ namespace pxsim {
 				this.yHistory.push([]);
 			}
 
-
-
 			// Initialize starting game elements
 			this.tweenChain = [];
 
+			//add event listener to buttons
+			this.button1.addEventListener("click", (e:Event) => this.triggerAnimation(1));
+			this.button2.addEventListener("click", (e:Event) => this.triggerAnimation(2));
+			this.button3.addEventListener("click", (e:Event) => this.triggerAnimation(3));
+			this.button4.addEventListener("click", (e:Event) => this.triggerAnimation(4));
+			this.button5.addEventListener("click", (e:Event) => this.triggerAnimation(5));
+			this.button6.addEventListener("click", (e:Event) => this.triggerAnimation(6));
+			this.button7.addEventListener("click", (e:Event) => this.triggerAnimation(7));
+			this.button8.addEventListener("click", (e:Event) => this.triggerAnimation(8));
+			this.button9.addEventListener("click", (e:Event) => this.triggerAnimation(9));
+			this.button10.addEventListener("click", (e:Event) => this.triggerAnimation(10));
 		}
 
-
-
+		triggerAnimation(level : number) {
+			if (states[level] != "locked") {
+				this.animateLevel(level, false);
+			}
+		}
 
 		// Updates internal game state based on the actions of the player.
 		// This function can be run independently of the game's graphics.
@@ -208,6 +256,7 @@ namespace pxsim {
 				// Once counter reaches 2 secs, stop running user's code and begin the game
 				if (this.updateCounter == 120) {
 					console.log("Results: ", this.results);
+					// this.updateLevelStates();
 					this.animateAllLevels(1);
 					this.updateCounter = 0;
 					this.pauseUpdate = true;
@@ -216,6 +265,16 @@ namespace pxsim {
 			}
 		}
 
+		updateLevelStates() {
+			for (var level = 1; level < this.highestLevelReached; level++) {
+				states[level] = "pass";
+			}
+			if (level <= this.levelCount) {
+				states[level] = "fail";
+			}
+		}
+
+		/*order: animateAllLevels -> animateLevel -> buildTweenChain -> startTweenChain*/
 
 		animateLevel(level: number, animateNextLevelIfWon: boolean) {
 
@@ -271,10 +330,11 @@ namespace pxsim {
 				this.map[level].setTileIndexCallback(3, this.doNothing, this);
 			}
 
-			// Start animating this level
 			this.buildTweenChain(level);
 			this.startTweenChain();
 			
+			//change button icon
+			this.changeIcon(level, states[level]);
 		}
 
 		nextLevel() {
@@ -391,11 +451,9 @@ namespace pxsim {
 			}
 		}
 
-
 		animateAllLevels(startingLevel: number) {
 			this.animateLevel(startingLevel, true);
 		}
-
 
 		faceLeft() {
 			for (var level = 1; level <= this.levelCount; level++) {
@@ -433,8 +491,37 @@ namespace pxsim {
 			}
 		}
 
+		wallAhead() {
+			var level = this.currAnimatedLevel;
+			if (this.robotDirection[level] == "left") {
+				var tileLeft = this.map[level].getTileLeft(this.map[level].getLayer(), this.robotX[level], this.robotY[level]);
+				console.log(tileLeft.index != 1);
+				return tileLeft.index == 1;
+			}
+
+			else if (this.robotDirection[level] == "right") {
+				var tileRight = this.map[level].getTileRight(this.map[level].getLayer(), this.robotX[level], this.robotY[level]);
+				console.log(tileRight.index != 1);
+				return tileRight.index == 1;
+			}
+
+			else if (this.robotDirection[level] == "up") {
+				var tileAbove = this.map[level].getTileAbove(this.map[level].getLayer(), this.robotX[level], this.robotY[level]);
+				console.log(tileAbove.index != 1);
+				return tileAbove.index == 1;
+			}
+
+			else if (this.robotDirection[level] == "down") {
+				var tileBelow = this.map[level].getTileBelow(this.map[level].getLayer(), this.robotX[level], this.robotY[level]);
+				console.log(tileBelow.index != 1);
+				return tileBelow.index == 1;
+			}	
+			return false;
+		}
+
 		moveForward() {
 			for (var level = 1; level <= this.levelCount; level++) {
+				//not won yet
 				if (this.results[level] == 0) {
 					if (this.robotDirection[level] == "left") {
 						var tileLeft = this.map[level].getTileLeft(this.map[level].getLayer(), this.robotX[level], this.robotY[level]);
@@ -471,20 +558,70 @@ namespace pxsim {
 					// Check if won
 					if (this.map[level].getTile(this.robotX[level], this.robotY[level], this.map[level].getLayer()).index == 3) {
 						this.results[level] = 1;
+						states[level] = "pass";
+						this.highestLevelReached = Math.max(this.highestLevelReached, level);
+					} else {
+						states[level] = "fail";
 					}
 				}
 			}		
 		}
 
+		//change button icon for a certain level
+		/**
+		 * only update until the highest reached level
+		 * if this level success, "yes"
+		 * if this level fails for the first time, "no"
+		 * if thie level fails for the second time, "unlocked"
+		 * @param level 
+		 * @param state 
+		 */
+		changeIcon(level : number, state : string) {
+			let icon;
+			if (state == "pass") {
+				icon = "assets/images/yes.png";
+			} else if (state == "fail") {
+				icon = "assets/images/no.png";
+			} else if (state == "unlocked") {
+				icon = "assets/images/unlock.png";
+			} else {
+				icon = "assets/images/lock.png";
+			}
 
-
-		hello (sprite: Phaser.Sprite, tile: Phaser.Tile) {
-			console.log("Hello");
-			console.log("Hello");
-			console.log("Hello");
-			console.log("Hello");
+			switch(level) {
+				case 1:
+					this.button1.src = icon;
+					break;
+				case 2:
+					this.button2.src = icon;
+					break;
+				case 3:
+					this.button3.src = icon;
+					break;
+				case 4:
+					this.button4.src = icon;
+					break;
+				case 5:
+					this.button5.src = icon;
+					break;
+				case 6:
+					this.button6.src = icon;
+					break;
+				case 7:
+					this.button7.src = icon;
+					break;
+				case 8:
+					this.button8.src = icon;
+					break;
+				case 9:
+					this.button9.src = icon;
+					break;
+				case 10:
+					this.button10.src = icon;
+					break;
+				default:
+			}
 		}
-
 
 		printLevel(level: number) {
 			console.log("Won level " + level);
@@ -495,6 +632,7 @@ namespace pxsim {
 			console.log("yHistory: " + this.yHistory[level]);
 		}
 
+		//update action log for a certain level
 		logAction(action: string, level: number) {
 			this.actionLog[level].push(action);
 			this.xHistory[level].push(this.robotX[level]);
@@ -505,6 +643,103 @@ namespace pxsim {
 		capitalizeFirstLetter(str: string) {
     		return str.charAt(0).toUpperCase() + str.slice(1);
 		}
+
+		printSomething(strArray: number[][]) {
+			for (var i = 0; i < strArray.length; i++) {
+				console.log(strArray[0] + ',' + strArray[1]);
+			}
+		}
+
+		doSomething() {
+			let N = 11, M = 7;
+			let new_node: number[] = []
+			let path_node: number[] = []
+
+			let nei: number[] = []
+			let cur: number[] = []
+
+			let matrix: number[][] = []
+			let visited: number[][] = [] //avoid duplication
+			let end: number[] = []
+			let start: number[] = []
+
+			//four directions
+			let directionY: number[] = []
+			let directionX: number[] = []
+
+			let queue: number[][] = [] //for BFS
+			let stack: number[][] = [] //for backtracking
+			let result: number[][] = []
+			result = []
+			stack = []
+			queue = []
+
+			directionX = [1, 0, -1, 0]
+			directionY = [0, 1, 0, -1]
+			start = [10, 3, 0, 0]
+			end = [0, 3, 0, 0]
+
+			visited = [[0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0]]
+			matrix = [[1, 1, 1, 3, 1, 1, 1], [1, 1, 1, 2, 1, 1, 1], [1, 1, 1, 2, 2, 2, 2], [1, 1, 1, 2, 1, 1, 1], [1, 1, 1, 2, 1, 1, 1], [2, 2, 2, 2, 2, 2, 1], [1, 1, 1, 1, 1, 2, 1], [1, 1, 1, 2, 2, 2, 1], [1, 1, 1, 2, 1, 1, 1], [1, 1, 1, 2, 1, 1, 1], [1, 1, 1, 2, 1, 1, 1]]
+
+			cur = [0, 0, 0, 0]
+			nei = [0, 0, 0, 0]
+			queue.push(start)
+			visited[start[0]][start[1]] = 1
+
+			while (queue.length != 0) {
+				// console.log("pass")
+				cur = queue.shift()
+				console.log(cur)
+				console.log(cur[0])
+				stack.push(cur)
+				for (let i = 0; i <= 4 - 1; i++) {
+					nei[0] = cur[0] + directionX[i]
+					nei[1] = cur[1] + directionY[i]
+					nei[2] = cur[0]
+					nei[3] = cur[1]
+					// console.log(nei + ',' + cur)
+					if (nei[0] == end[0] && nei[1] == end[1]) {
+						while (stack.length != 0) {
+							path_node = stack.pop()
+							if (nei[2] == path_node[0] && nei[3] == path_node[1]) {
+								result.push([path_node[0], path_node[1], path_node[2], path_node[3]])
+								nei = path_node
+							}
+						}
+					}
+					if (nei[0] >= 0 && nei[0] < N && nei[1] >= 0 && nei[1] < M && !(visited[nei[0]][nei[1]]) && (matrix[nei[0]][nei[1]] == 2 || matrix[nei[0]][nei[1]] == 3)) {
+						new_node = [nei[0], nei[1], nei[2], nei[3]]
+						queue.push(new_node)
+						visited[nei[0]][nei[1]] = 1
+					}
+				}
+			}
+			console.log(result);
+
+	
+			// for (let i = 4; i >= 0; i--) {
+			// 	if (result[i][0] = result[i + 1][0] - 1) {
+			// 		//left
+			// 		this.faceLeft();
+			// 		this.moveForward();
+			// 	} else if (result[i][0] = result[i + 1][0] + 1) {
+			// 		//right
+			// 		this.faceRight();
+			// 		this.moveForward();
+			// 	} else if (result[i][1] = result[i + 1][1] - 1) {
+			// 		//down
+			// 		this.faceDown();
+			// 		this.moveForward();
+			// 	} else if (result[i][1] = result[i + 1][1] + 1) {
+			// 		//up
+			// 		this.faceUp();
+			// 		this.moveForward();
+			// 	}
+			// }
+		}
+		
+		
 	}
 }
 

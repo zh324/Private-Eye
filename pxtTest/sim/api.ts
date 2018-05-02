@@ -41,8 +41,17 @@ namespace pxsim.Robot {
         return Promise.delay(100)
     }
 
-     /**
+    /**
      * Moves the robot 1 step in the direction it is facing.
+     */
+    //% blockId=wallAhead block="walk ahead"
+    export function wallAheadAsync() {
+        board().wallAhead();
+        return Promise.delay(100)
+    }
+
+    /**
+     * Judges whether there is a wall ahead.
      */
     //% blockId=moveForward block="walk forward"
     export function moveForwardAsync() {
@@ -50,9 +59,15 @@ namespace pxsim.Robot {
         return Promise.delay(100)
     }
 
+    /**
+     * Moves the robot 1 step in the direction it is facing.
+     */
+    //% blockId=doSomething block="do something"
+    export function doSomething() {
+        board().doSomething();
+    }  
+
 }
-
-
 
 // namespace pxsim.loops {
 //     /**

@@ -31,9 +31,23 @@ declare namespace Robot {
     /**
      * Moves the robot 1 step in the direction it is facing.
      */
+    //% blockId=wallAhead block="walk ahead"
+    //% shim=Robot::wallAheadAsync promise
+    function wallAhead(): void;
+
+    /**
+     * Judges whether there is a wall ahead.
+     */
     //% blockId=moveForward block="walk forward"
     //% shim=Robot::moveForwardAsync promise
     function moveForward(): void;
+
+    /**
+     * Moves the robot 1 step in the direction it is facing.
+     */
+    //% blockId=doSomething block="do something"
+    //% shim=Robot::doSomething
+    function doSomething(): void;
 
 }
 
