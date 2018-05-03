@@ -44,10 +44,9 @@ namespace pxsim.Robot {
     /**
      * Moves the robot 1 step in the direction it is facing.
      */
-    //% blockId=wallAhead block="walk ahead"
-    export function wallAheadAsync() {
-        board().wallAhead();
-        return Promise.delay(100)
+    //% blockId=wallAhead block="wall ahead"
+    export function wallAhead() {
+        return board().wallAhead();
     }
 
     /**
@@ -62,11 +61,10 @@ namespace pxsim.Robot {
     /**
      * Moves the robot 1 step in the direction it is facing.
      */
-    //% blockId=doSomething block="do something"
-    export function doSomething() {
-        board().doSomething();
-    }  
-
+    //% blockId=doSomething block="Breath First Search"
+    export function BreathFirstSearch() {
+        board().triggerBFS();
+    }
 }
 
 // namespace pxsim.loops {

@@ -1,7 +1,7 @@
 /// <reference path="../node_modules/pxt-core/built/pxtsim.d.ts"/>
 /// <reference path="../node_modules/phaser-ce/typescript/phaser.d.ts" />
 
-let states = ["locked", "locked", "locked", "locked", "locked", "locked", "locked", "locked", "locked", "locked", "locked"];
+let states = ["", "locked", "locked", "locked", "locked", "locked", "locked", "locked"];
 
 namespace pxsim {
 
@@ -65,6 +65,8 @@ namespace pxsim {
 		public layer: any;
 		public robotStartingX: any; //array
 		public robotStartingY: any; //array
+		public terminalX: any;
+		public terminalY: any;
 		public robotStartingDirection: any; //array
 
 		public failOnce : boolean;
@@ -117,9 +119,9 @@ namespace pxsim {
 		public button5: HTMLInputElement;
 		public button6: HTMLInputElement;
 		public button7: HTMLInputElement;
-		public button8: HTMLInputElement;
-		public button9: HTMLInputElement;
-		public button10: HTMLInputElement;
+		public contentDiv: HTMLDivElement;
+
+		public levelMatrix: any;
 
 
 		constructor() {
@@ -132,11 +134,7 @@ namespace pxsim {
 			this.button5 = <HTMLInputElement><any>document.getElementById("level5");
 			this.button6 = <HTMLInputElement><any>document.getElementById("level6");
 			this.button7 = <HTMLInputElement><any>document.getElementById("level7");
-			this.button8 = <HTMLInputElement><any>document.getElementById("level8");
-			this.button9 = <HTMLInputElement><any>document.getElementById("level9");
-			this.button10 = <HTMLInputElement><any>document.getElementById("level10");
-
-			this.failOnce = false;
+			this.contentDiv = <HTMLDivElement><any>document.getElementById("contentDiv");
 		}
 
 		initAsync(msg: pxsim.SimulatorRunMessage): Promise<void> {
@@ -146,8 +144,9 @@ namespace pxsim {
 				key: "init"
 			});
 			let that = this;
+			this.contentDiv.innerHTML = "";
 			return new Promise<void>((resolve, reject) => {
-				this.game = new Phaser.Game(448, 702, Phaser.AUTO, '', {
+				this.game = new Phaser.Game(448, 704, Phaser.AUTO, "contentDiv", {
 					preload: () => this.preload(),
 					create: () => {this.create(); resolve();},
 					update: () => this.update()
@@ -198,7 +197,9 @@ namespace pxsim {
 
 			this.robotStartingX = [null, 3, 3, 3, 3, 3, 3, 3];
 			this.robotStartingY = [null, 5, 6, 6, 10, 10, 10, 10];
-			this.robotStartingDirection = [null,"up","up","left","up","up","up","up","up","up","up"];
+			this.terminalX = [null, 3, 3, 3, 3, 4, 3, 1];
+			this.terminalY = [null, 4, 4, 4, 0, 0, 0, 0];
+			this.robotStartingDirection = [null,"up","up","left","up","up","up","up"];
 
 			this.map = [null];
 			this.robotX = [null];
@@ -234,9 +235,98 @@ namespace pxsim {
 			this.button5.addEventListener("click", (e:Event) => this.triggerAnimation(5));
 			this.button6.addEventListener("click", (e:Event) => this.triggerAnimation(6));
 			this.button7.addEventListener("click", (e:Event) => this.triggerAnimation(7));
-			this.button8.addEventListener("click", (e:Event) => this.triggerAnimation(8));
-			this.button9.addEventListener("click", (e:Event) => this.triggerAnimation(9));
-			this.button10.addEventListener("click", (e:Event) => this.triggerAnimation(10));
+
+			this.levelMatrix = [null];
+			//initialize level matrix
+            this.levelMatrix[0] = [[1, 1, 1, 1, 1, 1, 1], 
+                                    [1, 1, 1, 1, 1, 1, 1], 
+                                    [1, 1, 1, 1, 1, 1, 1], 
+                                    [1, 1, 1, 1, 1, 1, 1], 
+                                    [1, 1, 1, 1, 1, 1, 1], 
+                                    [1, 1, 1, 1, 1, 1, 1], 
+                                    [1, 1, 1, 1, 1, 1, 1], 
+                                    [1, 1, 1, 1, 1, 1, 1], 
+                                    [1, 1, 1, 1, 1, 1, 1], 
+                                    [1, 1, 1, 1, 1, 1, 1], 
+                                    [1, 1, 1, 1, 1, 1, 1]];
+            this.levelMatrix[1] = [[1, 1, 1, 1, 1, 1, 1], 
+                                    [1, 1, 1, 1, 1, 1, 1], 
+                                    [1, 1, 1, 1, 1, 1, 1], 
+                                    [1, 1, 1, 1, 1, 1, 1], 
+                                    [1, 1, 1, 3, 1, 1, 1], 
+                                    [1, 1, 1, 2, 1, 1, 1], 
+                                    [1, 1, 1, 1, 1, 1, 1], 
+                                    [1, 1, 1, 1, 1, 1, 1], 
+                                    [1, 1, 1, 1, 1, 1, 1], 
+                                    [1, 1, 1, 1, 1, 1, 1], 
+                                    [1, 1, 1, 1, 1, 1, 1]];
+            this.levelMatrix[2] = [[1, 1, 1, 1, 1, 1, 1], 
+                                    [1, 1, 1, 1, 1, 1, 1], 
+                                    [1, 1, 1, 1, 1, 1, 1], 
+                                    [1, 1, 1, 1, 1, 1, 1], 
+                                    [1, 1, 1, 3, 1, 1, 1], 
+                                    [1, 1, 1, 2, 1, 1, 1], 
+                                    [1, 1, 1, 2, 1, 1, 1], 
+                                    [1, 1, 1, 1, 1, 1, 1], 
+                                    [1, 1, 1, 1, 1, 1, 1], 
+                                    [1, 1, 1, 1, 1, 1, 1], 
+                                    [1, 1, 1, 1, 1, 1, 1]];
+            this.levelMatrix[3] = [[1, 1, 1, 1, 1, 1, 1], 
+                                    [1, 1, 1, 1, 1, 1, 1], 
+                                    [1, 1, 1, 1, 1, 1, 1], 
+                                    [1, 1, 1, 1, 1, 1, 1], 
+                                    [1, 1, 1, 3, 1, 1, 1], 
+                                    [1, 1, 1, 2, 1, 1, 1], 
+                                    [1, 1, 1, 2, 1, 1, 1], 
+                                    [1, 1, 1, 1, 1, 1, 1], 
+                                    [1, 1, 1, 1, 1, 1, 1], 
+                                    [1, 1, 1, 1, 1, 1, 1], 
+                                    [1, 1, 1, 1, 1, 1, 1]];
+            this.levelMatrix[4] = [[1, 1, 1, 3, 1, 1, 1], 
+                                    [1, 1, 1, 2, 1, 1, 1], 
+                                    [1, 1, 1, 2, 1, 1, 1], 
+                                    [1, 1, 1, 2, 1, 1, 1], 
+                                    [1, 1, 1, 2, 1, 1, 1], 
+                                    [1, 1, 1, 2, 1, 1, 1], 
+                                    [1, 1, 1, 2, 1, 1, 1], 
+                                    [1, 1, 1, 2, 1, 1, 1], 
+                                    [1, 1, 1, 2, 1, 1, 1], 
+                                    [1, 1, 1, 2, 1, 1, 1], 
+                                    [1, 1, 1, 2, 1, 1, 1]];
+            this.levelMatrix[5] = [[1, 1, 1, 1, 3, 1, 1], 
+                                    [1, 1, 1, 1, 2, 1, 1], 
+                                    [1, 1, 1, 1, 2, 1, 1], 
+                                    [1, 1, 1, 1, 2, 1, 1], 
+                                    [1, 1, 1, 1, 2, 1, 1], 
+                                    [1, 1, 1, 2, 2, 1, 1], 
+                                    [1, 1, 1, 2, 1, 1, 1], 
+                                    [1, 1, 1, 2, 1, 1, 1], 
+                                    [1, 1, 1, 2, 1, 1, 1], 
+                                    [1, 1, 1, 2, 1, 1, 1], 
+                                    [1, 1, 1, 2, 1, 1, 1]];
+            this.levelMatrix[6] = [[1, 1, 1, 3, 1, 1, 1], 
+                                    [1, 1, 1, 2, 1, 1, 1], 
+                                    [1, 1, 1, 2, 1, 1, 1], 
+                                    [1, 2, 2, 2, 1, 1, 1], 
+                                    [1, 2, 1, 1, 1, 1, 1], 
+                                    [1, 2, 2, 2, 2, 2, 1], 
+                                    [1, 1, 1, 1, 1, 2, 1], 
+                                    [1, 1, 1, 2, 2, 2, 1], 
+                                    [1, 1, 1, 2, 1, 1, 1], 
+                                    [1, 1, 1, 2, 1, 1, 1], 
+                                    [1, 1, 1, 2, 1, 1, 1]];
+            this.levelMatrix[7] = [[1, 3, 1, 1, 1, 2, 1], 
+                                    [1, 2, 1, 1, 1, 2, 1], 
+                                    [1, 2, 1, 1, 1, 2, 1], 
+                                    [1, 2, 1, 1, 1, 2, 1], 
+                                    [1, 2, 1, 1, 1, 2, 1], 
+                                    [1, 2, 1, 1, 1, 2, 1], 
+                                    [1, 2, 1, 1, 1, 2, 1], 
+                                    [1, 2, 2, 2, 2, 2, 1], 
+                                    [1, 1, 1, 2, 1, 1, 1], 
+                                    [1, 1, 1, 2, 1, 1, 1], 
+                                    [1, 1, 1, 2, 1, 1, 1]];
+
 		}
 
 		triggerAnimation(level : number) {
@@ -610,15 +700,6 @@ namespace pxsim {
 				case 7:
 					this.button7.src = icon;
 					break;
-				case 8:
-					this.button8.src = icon;
-					break;
-				case 9:
-					this.button9.src = icon;
-					break;
-				case 10:
-					this.button10.src = icon;
-					break;
 				default:
 			}
 		}
@@ -650,7 +731,41 @@ namespace pxsim {
 			}
 		}
 
-		doSomething() {
+		triggerBFS() {
+			this.actionLog = [null];
+			for (var level = 1; level <= this.levelCount; level++) {
+				var path = this.BFS(level);
+				this.actionLog.push(this.getLevelActionLog(path));
+			}
+		}
+
+		getLevelActionLog(path: any) {
+			var result = [];
+			var length = path.length;
+			var cur, next;
+			for (var i = length - 1; i >= 1; i--) {
+				cur = i, next = i - 1;
+				if (path[next][0] == path[cur][0] - 1) {
+					result.push("faceUp");
+					result.push("moveForward");
+				} else if (path[next][0] == path[cur][0] + 1) {
+					result.push("faceDown");
+					result.push("moveForward");
+				} else if (path[next][1] == path[cur][1] - 1) {
+					result.push("faceLeft");
+					result.push("moveForward");
+				} else if (path[next][1] == path[cur][1] + 1) {
+					result.push("faceRight");
+					result.push("moveForward");
+				}
+			}
+			result.push("faceUp");
+			result.push("moveForward");
+			console.log(result);
+			return result;
+		}
+
+		BFS(level: number) {
 			let N = 11, M = 7;
 			let new_node: number[] = []
 			let path_node: number[] = []
@@ -676,11 +791,12 @@ namespace pxsim {
 
 			directionX = [1, 0, -1, 0]
 			directionY = [0, 1, 0, -1]
-			start = [10, 3, 0, 0]
-			end = [0, 3, 0, 0]
+
+			start = [this.robotStartingY[level], this.robotStartingX[level], 0, 0];
+			end = [this.terminalY[level], this.terminalX[level], 0, 0];
 
 			visited = [[0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0]]
-			matrix = [[1, 1, 1, 3, 1, 1, 1], [1, 1, 1, 2, 1, 1, 1], [1, 1, 1, 2, 2, 2, 2], [1, 1, 1, 2, 1, 1, 1], [1, 1, 1, 2, 1, 1, 1], [2, 2, 2, 2, 2, 2, 1], [1, 1, 1, 1, 1, 2, 1], [1, 1, 1, 2, 2, 2, 1], [1, 1, 1, 2, 1, 1, 1], [1, 1, 1, 2, 1, 1, 1], [1, 1, 1, 2, 1, 1, 1]]
+			matrix = this.levelMatrix[level];
 
 			cur = [0, 0, 0, 0]
 			nei = [0, 0, 0, 0]
@@ -690,8 +806,6 @@ namespace pxsim {
 			while (queue.length != 0) {
 				// console.log("pass")
 				cur = queue.shift()
-				console.log(cur)
-				console.log(cur[0])
 				stack.push(cur)
 				for (let i = 0; i <= 4 - 1; i++) {
 					nei[0] = cur[0] + directionX[i]
@@ -715,31 +829,8 @@ namespace pxsim {
 					}
 				}
 			}
-			console.log(result);
-
-	
-			// for (let i = 4; i >= 0; i--) {
-			// 	if (result[i][0] = result[i + 1][0] - 1) {
-			// 		//left
-			// 		this.faceLeft();
-			// 		this.moveForward();
-			// 	} else if (result[i][0] = result[i + 1][0] + 1) {
-			// 		//right
-			// 		this.faceRight();
-			// 		this.moveForward();
-			// 	} else if (result[i][1] = result[i + 1][1] - 1) {
-			// 		//down
-			// 		this.faceDown();
-			// 		this.moveForward();
-			// 	} else if (result[i][1] = result[i + 1][1] + 1) {
-			// 		//up
-			// 		this.faceUp();
-			// 		this.moveForward();
-			// 	}
-			// }
+			return result;
 		}
-		
-		
 	}
 }
 
