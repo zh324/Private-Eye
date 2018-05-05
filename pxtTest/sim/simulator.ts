@@ -1,8 +1,6 @@
 /// <reference path="../node_modules/pxt-core/built/pxtsim.d.ts"/>
 /// <reference path="../node_modules/phaser-ce/typescript/phaser.d.ts" />
 
-let states = ["", "locked", "locked", "locked", "locked", "locked", "locked", "locked"];
-
 namespace pxsim {
 
 	export interface ISimMessage {
@@ -69,8 +67,6 @@ namespace pxsim {
 		public terminalY: any;
 		public robotStartingDirection: any; //array
 
-		public failOnce : boolean;
-
 		//array
 		public robotX: any; // Tile, not pixel
 		public robotY: any; // Tile, not pixel
@@ -81,16 +77,6 @@ namespace pxsim {
 
 		//array: block limit for each level
 		public blockLimit: number;
-
-		/**
-		 * level state:
-		 * Stop at first failed level
-		 * locked - never reached - don't play animation
-		 * unclocked - reached before - don't play animation
-		 * pass - play animation
-		 * fail - fail for the first time - play animation - it's where the game will
-		**/
-		// public states: any;
 
 		// Animation
 		public currAnimatedLevel: number;
@@ -103,6 +89,9 @@ namespace pxsim {
 		public walkSpeed: number;
 		public turnSpeed: number;
 		public tweenChainRunning: boolean;
+
+		//fail indicator: this is to indicate that there is failed level before or not
+		public failedAlready: boolean;
 
 		// Flip flops for keyboard controls
 		public flipFlop_l: boolean;
@@ -123,7 +112,6 @@ namespace pxsim {
 
 		public levelMatrix: any;
 
-
 		constructor() {
 			super();
 			this.bus = new EventBus(runtime);
@@ -135,6 +123,7 @@ namespace pxsim {
 			this.button6 = <HTMLInputElement><any>document.getElementById("level6");
 			this.button7 = <HTMLInputElement><any>document.getElementById("level7");
 			this.contentDiv = <HTMLDivElement><any>document.getElementById("contentDiv");
+
 		}
 
 		initAsync(msg: pxsim.SimulatorRunMessage): Promise<void> {
@@ -184,6 +173,8 @@ namespace pxsim {
 			this.updateCounter = 0;
 			this.pauseUpdate = false;
 
+			this.failedAlready = false;
+
 			// Setup our controls
 			this.cursors = this.game.input.keyboard.createCursorKeys();
 			this.spaceKey = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
@@ -228,13 +219,13 @@ namespace pxsim {
 			this.tweenChain = [];
 
 			//add event listener to buttons
-			this.button1.addEventListener("click", (e:Event) => this.triggerAnimation(1));
-			this.button2.addEventListener("click", (e:Event) => this.triggerAnimation(2));
-			this.button3.addEventListener("click", (e:Event) => this.triggerAnimation(3));
-			this.button4.addEventListener("click", (e:Event) => this.triggerAnimation(4));
-			this.button5.addEventListener("click", (e:Event) => this.triggerAnimation(5));
-			this.button6.addEventListener("click", (e:Event) => this.triggerAnimation(6));
-			this.button7.addEventListener("click", (e:Event) => this.triggerAnimation(7));
+			this.button1.addEventListener("click", (e:Event) => this.triggerButtonClick(1));
+			this.button2.addEventListener("click", (e:Event) => this.triggerButtonClick(2));
+			this.button3.addEventListener("click", (e:Event) => this.triggerButtonClick(3));
+			this.button4.addEventListener("click", (e:Event) => this.triggerButtonClick(4));
+			this.button5.addEventListener("click", (e:Event) => this.triggerButtonClick(5));
+			this.button6.addEventListener("click", (e:Event) => this.triggerButtonClick(6));
+			this.button7.addEventListener("click", (e:Event) => this.triggerButtonClick(7));
 
 			this.levelMatrix = [null];
 			//initialize level matrix
@@ -329,9 +320,10 @@ namespace pxsim {
 
 		}
 
-		triggerAnimation(level : number) {
-			if (states[level] != "locked") {
-				this.animateLevel(level, false);
+		triggerButtonClick(level : number) {
+			var state = window.localStorage["level" + level];
+			if (level <= this.highestLevelReached) {
+				this.animateLevelForButton(level, false);
 			}
 		}
 
@@ -340,13 +332,15 @@ namespace pxsim {
 		// Default frequency is 60 times / sec
 		update() {
 			if (this.pauseUpdate == false) {
-				
+				this.updateLevelState();
 				this.updateCounter++;
 
 				// Once counter reaches 2 secs, stop running user's code and begin the game
-				if (this.updateCounter == 120) {
+				if (this.updateCounter == 100) {
 					console.log("Results: ", this.results);
-					// this.updateLevelStates();
+					for (var level = 1; level < this.levelCount; level++) {
+						this.changeIcon(level);
+					}
 					this.animateAllLevels(1);
 					this.updateCounter = 0;
 					this.pauseUpdate = true;
@@ -355,18 +349,44 @@ namespace pxsim {
 			}
 		}
 
-		updateLevelStates() {
-			for (var level = 1; level < this.highestLevelReached; level++) {
-				states[level] = "pass";
+		updateLevelState() {
+			console.log(this.highestLevelReached);
+			for (var level = 1; level < this.levelCount; level++) {
+				if (this.results[level] == 0) {
+					this.highestLevelReached = level;
+					var temp = window.localStorage["absoluteHighestLevel"];
+					if (temp == NaN) {
+						window.localStorage["absoluteHighestLevel"] = level;
+					} else {
+						window.localStorage["absoluteHighestLevel"] = Math.max(temp, level);
+					}
+					break; 
+				}
 			}
-			if (level <= this.levelCount) {
-				states[level] = "fail";
+			for (var level = 1; level < this.levelCount; level++) {
+				var hs = window.localStorage["absoluteHighestLevel"];
+				var history = window.localStorage["successHistory" + level];
+				if (this.results[level] == 1) {
+					if (history == undefined || history == "no") {
+						window.localStorage["level" + level] = "success1";
+						window.localStorage["successHistory" + level] = "yes";
+					} else if (history == "yes") {
+						window.localStorage["level" + level] = "successN";
+					}
+				} else {
+					if (level == this.highestLevelReached) {
+						window.localStorage["level" + level] = "fail";
+					} else if (level > this.highestLevelReached && level <= hs) {
+						window.localStorage["level" + level] = "unlock";
+					} else if (level > hs) {
+						window.localStorage["level" + level] = "lock";
+					}
+				}
 			}
 		}
 
-		/*order: animateAllLevels -> animateLevel -> buildTweenChain -> startTweenChain*/
-
-		animateLevel(level: number, animateNextLevelIfWon: boolean) {
+		animateLevelForButton(level: number, animateNextLevelIfWon: boolean) {
+			var state = window.localStorage["level" + level];
 
 			// Update global "currently animated level" variable
 			this.currAnimatedLevel = level;
@@ -415,16 +435,75 @@ namespace pxsim {
 			if (animateNextLevelIfWon) {
 				this.map[level].setTileIndexCallback(3, this.nextLevel, this);
 			}
+			else {
+				this.map[level].setTileIndexCallback(3, this.doNothing, this);
+			}
+		
+			this.buildTweenChain(level);
+			this.startTweenChain();
+		}
 
+		/*order: animateAllLevels -> animateLevel -> buildTweenChain -> startTweenChain*/
+		animateLevel(level: number, animateNextLevelIfWon: boolean) {
+		
+			// Update global "currently animated level" variable
+			this.currAnimatedLevel = level;
+
+			// Set up tiles for the current level's map
+			this.map[level].addTilesetImage("tiles");
+
+			// Create a visual layer for the map above.
+			// This completely covers up everything from the previous layer.
+			this.layer = this.map[level].createLayer("Tile Layer 1");
+
+			//this.layer.resizeWorld();
+
+			// Player robot stuff
+			this.walkSpeed = 500; // Time in ms it takes to perform each animation (the lower the faster).
+			this.turnSpeed = 500;
+			var robotFps = 4000/this.walkSpeed;
+
+
+			this.robot = this.game.add.sprite(this.robotStartingX[level]*64, this.robotStartingY[level]*64, "robot"); // Starting position
+			this.robot.animations.add("faceDown", [0],robotFps,false);
+			this.robot.animations.add("faceLeft", [4],robotFps,false);
+			this.robot.animations.add("faceRight", [8],robotFps,false);
+			this.robot.animations.add("faceUp", [12],robotFps,false);
+			this.robot.animations.add("moveDown", [0,1,2,3],robotFps,true);
+			this.robot.animations.add("moveLeft", [4,5,6,7],robotFps,true);
+			this.robot.animations.add("moveRight", [8,9,10,11],robotFps,true);
+			this.robot.animations.add("moveUp", [12,13,14,15],robotFps,true);
+
+			this.robot.animations.play("face"+this.capitalizeFirstLetter(this.robotDirection[level]));
+
+			this.robot.body.collideWorldBounds = true;
+			
+			// Setup game camera
+			this.game.camera.follow(this.robot);
+
+			// Write the current level text
+			this.game.add.text(16, 16, 'Level ' + level, { fontSize: 24, fill: '#fff' });
+
+			// State Text
+			this.stateText = this.game.add.text(this.game.world.centerX,this.game.world.centerY,' ', { font: '48px Arial', fill: 'black' });
+			this.stateText.anchor.setTo(0.5, 0.5);
+			this.stateText.visible = false;
+
+
+			if (animateNextLevelIfWon) {
+				this.map[level].setTileIndexCallback(3, this.nextLevel, this);
+			}
 			else {
 				this.map[level].setTileIndexCallback(3, this.doNothing, this);
 			}
 
-			this.buildTweenChain(level);
-			this.startTweenChain();
+			// if (state == "success1" || state == "fail") {
+				this.buildTweenChain(level);
+				this.startTweenChain();
+			// } else {
+			// 	this.nextLevel();
+			// }
 			
-			//change button icon
-			this.changeIcon(level, states[level]);
 		}
 
 		nextLevel() {
@@ -447,7 +526,6 @@ namespace pxsim {
 						this.robot.animations.play("faceLeft");
 					}, this)
 				}
-
 
 				else if (this.actionLog[level][i] == "faceRight") {
 					currTween.to({}, this.turnSpeed, Phaser.Easing.Linear.None, false)
@@ -532,6 +610,7 @@ namespace pxsim {
 		}
 
 		startTweenChain() {
+			console.log(this.tweenChain);
 			
 			if (this.tweenChain.length > 0) {
 
@@ -648,33 +727,23 @@ namespace pxsim {
 					// Check if won
 					if (this.map[level].getTile(this.robotX[level], this.robotY[level], this.map[level].getLayer()).index == 3) {
 						this.results[level] = 1;
-						states[level] = "pass";
-						this.highestLevelReached = Math.max(this.highestLevelReached, level);
-					} else {
-						states[level] = "fail";
 					}
 				}
 			}		
 		}
 
 		//change button icon for a certain level
-		/**
-		 * only update until the highest reached level
-		 * if this level success, "yes"
-		 * if this level fails for the first time, "no"
-		 * if thie level fails for the second time, "unlocked"
-		 * @param level 
-		 * @param state 
-		 */
-		changeIcon(level : number, state : string) {
+		changeIcon(level : number) {
 			let icon;
-			if (state == "pass") {
+			let state = window.localStorage["level" + level];
+			console.log("level" + level + "," + state);
+			if (state == "success1" || state == "successN") {
 				icon = "assets/images/yes.png";
 			} else if (state == "fail") {
 				icon = "assets/images/no.png";
-			} else if (state == "unlocked") {
+			} else if (state == "unlock") {
 				icon = "assets/images/unlock.png";
-			} else {
+			} else if (state == "lock") {
 				icon = "assets/images/lock.png";
 			}
 
@@ -720,7 +789,6 @@ namespace pxsim {
 			this.yHistory[level].push(this.robotY[level]);
 		}
 
-
 		capitalizeFirstLetter(str: string) {
     		return str.charAt(0).toUpperCase() + str.slice(1);
 		}
@@ -736,7 +804,17 @@ namespace pxsim {
 			for (var level = 1; level <= this.levelCount; level++) {
 				var path = this.BFS(level);
 				this.actionLog.push(this.getLevelActionLog(path));
+				this.getLevelPositionHistory(path, level);
 			}
+		}
+		getLevelPositionHistory(path: any, level: number) {
+			var length = path.length;
+			for (var i = length - 1; i >= 0; i--) {
+				this.xHistory[level].push(path[i][1]);
+				this.yHistory[level].push(path[i][0]);
+			}
+			this.xHistory[level].push(this.terminalX[level]);
+			this.yHistory[level].push(this.terminalY[level]);
 		}
 
 		getLevelActionLog(path: any) {
@@ -761,7 +839,6 @@ namespace pxsim {
 			}
 			result.push("faceUp");
 			result.push("moveForward");
-			console.log(result);
 			return result;
 		}
 
@@ -804,7 +881,6 @@ namespace pxsim {
 			visited[start[0]][start[1]] = 1
 
 			while (queue.length != 0) {
-				// console.log("pass")
 				cur = queue.shift()
 				stack.push(cur)
 				for (let i = 0; i <= 4 - 1; i++) {
@@ -812,7 +888,6 @@ namespace pxsim {
 					nei[1] = cur[1] + directionY[i]
 					nei[2] = cur[0]
 					nei[3] = cur[1]
-					// console.log(nei + ',' + cur)
 					if (nei[0] == end[0] && nei[1] == end[1]) {
 						while (stack.length != 0) {
 							path_node = stack.pop()
