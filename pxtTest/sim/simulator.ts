@@ -8,6 +8,8 @@ namespace pxsim {
 		key?: string;
 		data?: string;
 	}
+
+
 	/**
 	 * This function gets called each time the program restarts
 	 */
@@ -24,6 +26,7 @@ namespace pxsim {
 		return runtime.board as Board;
 	}
 
+
 	const postContainerMessage = (message: pxsim.ISimMessage) => {
 		Runtime.postMessage({
 			type: "custom",
@@ -31,6 +34,7 @@ namespace pxsim {
 			content: message
 		} as pxsim.SimulatorCustomMessage);
 	};
+
 
 	/**
 	 * Represents the entire state of the executing program.
@@ -58,7 +62,6 @@ namespace pxsim {
 		public pauseUpdate: boolean;
 
 		// Game logic
-		
 		public map: any;
 		public layer: any;
 		public robotStartingX: any; //array
@@ -67,15 +70,12 @@ namespace pxsim {
 		public terminalY: any;
 		public robotStartingDirection: any; //array
 
-		//array
 		public robotX: any; // Tile, not pixel
 		public robotY: any; // Tile, not pixel
 		public robotDirection: any;
 		
-		//array
 		public results: any;
 
-		//array: block limit for each level
 		public blockLimit: number;
 
 		// Animation
@@ -90,9 +90,6 @@ namespace pxsim {
 		public turnSpeed: number;
 		public tweenChainRunning: boolean;
 
-		//fail indicator: this is to indicate that there is failed level before or not
-		public failedAlready: boolean;
-
 		// Flip flops for keyboard controls
 		public flipFlop_l: boolean;
 		public flipFlop_r: boolean;
@@ -100,7 +97,7 @@ namespace pxsim {
 		public flipFlop_d: boolean;
 		public flipFlop_move: boolean;
 
-		//html buttons
+		//html elements
 		public button1: HTMLInputElement;
 		public button2: HTMLInputElement;
 		public button3: HTMLInputElement;
@@ -111,6 +108,7 @@ namespace pxsim {
 		public contentDiv: HTMLDivElement;
 
 		public levelMatrix: any;
+
 
 		constructor() {
 			super();
@@ -123,8 +121,8 @@ namespace pxsim {
 			this.button6 = <HTMLInputElement><any>document.getElementById("level6");
 			this.button7 = <HTMLInputElement><any>document.getElementById("level7");
 			this.contentDiv = <HTMLDivElement><any>document.getElementById("contentDiv");
-
 		}
+
 
 		initAsync(msg: pxsim.SimulatorRunMessage): Promise<void> {
 
@@ -143,6 +141,7 @@ namespace pxsim {
 			});
 		}
 
+
 		preload() {
 
 			this.game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
@@ -160,6 +159,7 @@ namespace pxsim {
 			}
 		}
 
+
 		// Create initial variables of the game.
 		// Called once at start of game load.
 		create() {
@@ -172,8 +172,6 @@ namespace pxsim {
 			// Game frame counter
 			this.updateCounter = 0;
 			this.pauseUpdate = false;
-
-			this.failedAlready = false;
 
 			// Setup our controls
 			this.cursors = this.game.input.keyboard.createCursorKeys();
@@ -188,9 +186,9 @@ namespace pxsim {
 
 			this.robotStartingX = [null, 3, 3, 3, 3, 3, 3, 3];
 			this.robotStartingY = [null, 5, 6, 6, 10, 10, 10, 10];
+			this.robotStartingDirection = [null,"up","up","left","up","up","up","up"];
 			this.terminalX = [null, 3, 3, 3, 3, 4, 3, 1];
 			this.terminalY = [null, 4, 4, 4, 0, 0, 0, 0];
-			this.robotStartingDirection = [null,"up","up","left","up","up","up","up"];
 
 			this.map = [null];
 			this.robotX = [null];
@@ -215,9 +213,6 @@ namespace pxsim {
 				this.yHistory.push([]);
 			}
 
-			// Initialize starting game elements
-			this.tweenChain = [];
-
 			//add event listener to buttons
 			this.button1.addEventListener("click", (e:Event) => this.triggerButtonClick(1));
 			this.button2.addEventListener("click", (e:Event) => this.triggerButtonClick(2));
@@ -227,8 +222,8 @@ namespace pxsim {
 			this.button6.addEventListener("click", (e:Event) => this.triggerButtonClick(6));
 			this.button7.addEventListener("click", (e:Event) => this.triggerButtonClick(7));
 
-			this.levelMatrix = [null];
 			//initialize level matrix
+			this.levelMatrix = [];
             this.levelMatrix[0] = [[1, 1, 1, 1, 1, 1, 1], 
                                     [1, 1, 1, 1, 1, 1, 1], 
                                     [1, 1, 1, 1, 1, 1, 1], 
@@ -320,23 +315,17 @@ namespace pxsim {
 
 		}
 
-		triggerButtonClick(level : number) {
-			var state = window.localStorage["level" + level];
-			if (level <= this.highestLevelReached) {
-				this.animateLevelForButton(level, false);
-			}
-		}
 
 		// Updates internal game state based on the actions of the player.
 		// This function can be run independently of the game's graphics.
 		// Default frequency is 60 times / sec
 		update() {
 			if (this.pauseUpdate == false) {
-				this.updateLevelState();
 				this.updateCounter++;
 
 				// Once counter reaches 2 secs, stop running user's code and begin the game
 				if (this.updateCounter == 100) {
+					this.updateLevelState();
 					console.log("Results: ", this.results);
 					for (var level = 1; level < this.levelCount; level++) {
 						this.changeIcon(level);
@@ -349,8 +338,20 @@ namespace pxsim {
 			}
 		}
 
+		
+		reset() {
+			for (var level = 1; level < this.levelCount; level++) {
+				window.localStorage["level" + level] = "lock";
+				window.localStorage["successHistory" + level] = "no";
+				console.log(window.localStorage["level" + level])
+			}
+			window.localStorage["absoluteHighestLevel"] = 0;
+			
+		}
+
+
+		//constantly updating level states, called in update()
 		updateLevelState() {
-			console.log(this.highestLevelReached);
 			for (var level = 1; level < this.levelCount; level++) {
 				if (this.results[level] == 0) {
 					this.highestLevelReached = level;
@@ -367,6 +368,7 @@ namespace pxsim {
 				var hs = window.localStorage["absoluteHighestLevel"];
 				var history = window.localStorage["successHistory" + level];
 				if (this.results[level] == 1) {
+					console.log(history);
 					if (history == undefined || history == "no") {
 						window.localStorage["level" + level] = "success1";
 						window.localStorage["successHistory" + level] = "yes";
@@ -384,6 +386,16 @@ namespace pxsim {
 				}
 			}
 		}
+
+
+		triggerButtonClick(level : number) {
+			var state = window.localStorage["level" + level];
+			if (level <= this.highestLevelReached) {
+				//only run current level, set "false"
+				this.animateLevelForButton(level, false);
+			}
+		}
+
 
 		animateLevelForButton(level: number, animateNextLevelIfWon: boolean) {
 			var state = window.localStorage["level" + level];
@@ -443,6 +455,12 @@ namespace pxsim {
 			this.startTweenChain();
 		}
 
+
+		animateAllLevels(startingLevel: number) {
+			this.animateLevel(startingLevel, true);
+		}
+
+
 		/*order: animateAllLevels -> animateLevel -> buildTweenChain -> startTweenChain*/
 		animateLevel(level: number, animateNextLevelIfWon: boolean) {
 		
@@ -462,7 +480,6 @@ namespace pxsim {
 			this.walkSpeed = 500; // Time in ms it takes to perform each animation (the lower the faster).
 			this.turnSpeed = 500;
 			var robotFps = 4000/this.walkSpeed;
-
 
 			this.robot = this.game.add.sprite(this.robotStartingX[level]*64, this.robotStartingY[level]*64, "robot"); // Starting position
 			this.robot.animations.add("faceDown", [0],robotFps,false);
@@ -489,7 +506,6 @@ namespace pxsim {
 			this.stateText.anchor.setTo(0.5, 0.5);
 			this.stateText.visible = false;
 
-
 			if (animateNextLevelIfWon) {
 				this.map[level].setTileIndexCallback(3, this.nextLevel, this);
 			}
@@ -497,18 +513,21 @@ namespace pxsim {
 				this.map[level].setTileIndexCallback(3, this.doNothing, this);
 			}
 
-			// if (state == "success1" || state == "fail") {
+			var state = window.localStorage["level" + level];
+			if (state == "success1" || state == "fail") {
 				this.buildTweenChain(level);
 				this.startTweenChain();
-			// } else {
-			// 	this.nextLevel();
-			// }
+			} else {
+				this.nextLevel();
+			}
 			
 		}
 
+
 		nextLevel() {
-			this.animateLevel(this.currAnimatedLevel+1, true);
+			this.animateLevel(this.currAnimatedLevel + 1, true);
 		}
+
 
 		doNothing() {}
 
@@ -609,20 +628,15 @@ namespace pxsim {
 
 		}
 
-		startTweenChain() {
-			console.log(this.tweenChain);
-			
-			if (this.tweenChain.length > 0) {
 
+		startTweenChain() {
+			if (this.tweenChain.length > 0) {
 				// Start animation chain
 				this.tweenChain[0].start();
 
 			}
 		}
 
-		animateAllLevels(startingLevel: number) {
-			this.animateLevel(startingLevel, true);
-		}
 
 		faceLeft() {
 			for (var level = 1; level <= this.levelCount; level++) {
@@ -633,6 +647,7 @@ namespace pxsim {
 			}
 		}
 
+
 		faceRight() {
 			for (var level = 1; level <= this.levelCount; level++) {
 				if (this.results[level] == 0) {
@@ -641,6 +656,7 @@ namespace pxsim {
 				}
 			}
 		}		
+
 
 		faceUp() {
 			for (var level = 1; level <= this.levelCount; level++) {
@@ -651,6 +667,7 @@ namespace pxsim {
 			}
 		}		
 
+
 		faceDown() {
 			for (var level = 1; level <= this.levelCount; level++) {
 				if (this.results[level] == 0) {
@@ -659,6 +676,7 @@ namespace pxsim {
 				}
 			}
 		}
+
 
 		wallAhead() {
 			var level = this.currAnimatedLevel;
@@ -687,6 +705,7 @@ namespace pxsim {
 			}	
 			return false;
 		}
+
 
 		moveForward() {
 			for (var level = 1; level <= this.levelCount; level++) {
@@ -732,6 +751,7 @@ namespace pxsim {
 			}		
 		}
 
+
 		//change button icon for a certain level
 		changeIcon(level : number) {
 			let icon;
@@ -773,6 +793,7 @@ namespace pxsim {
 			}
 		}
 
+
 		printLevel(level: number) {
 			console.log("Won level " + level);
 			console.log("robotCurrentX: " + this.robotX[level]);
@@ -782,6 +803,7 @@ namespace pxsim {
 			console.log("yHistory: " + this.yHistory[level]);
 		}
 
+
 		//update action log for a certain level
 		logAction(action: string, level: number) {
 			this.actionLog[level].push(action);
@@ -789,15 +811,18 @@ namespace pxsim {
 			this.yHistory[level].push(this.robotY[level]);
 		}
 
+
 		capitalizeFirstLetter(str: string) {
     		return str.charAt(0).toUpperCase() + str.slice(1);
 		}
+
 
 		printSomething(strArray: number[][]) {
 			for (var i = 0; i < strArray.length; i++) {
 				console.log(strArray[0] + ',' + strArray[1]);
 			}
 		}
+
 
 		triggerBFS() {
 			this.actionLog = [null];
@@ -807,6 +832,8 @@ namespace pxsim {
 				this.getLevelPositionHistory(path, level);
 			}
 		}
+
+
 		getLevelPositionHistory(path: any, level: number) {
 			var length = path.length;
 			for (var i = length - 1; i >= 0; i--) {
