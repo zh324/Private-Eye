@@ -162,6 +162,11 @@ namespace pxsim {
 		// Create initial variables of the game.
 		// Called once at start of game load.
 		create() {
+			console.log(typeof(window.localStorage["level1"]));
+			if (typeof(window.localStorage["level1"]) == "undefined") { 
+				console.log("I'm here")
+				this.reset();
+			}
 
 			// Setup game physics
 			this.game.physics.startSystem(Phaser.Physics.ARCADE);
@@ -345,7 +350,7 @@ namespace pxsim {
 				console.log(window.localStorage["level" + level])
 			}
 			window.localStorage["absoluteHighestLevel"] = 0;
-			
+
 		}
 
 
@@ -355,19 +360,16 @@ namespace pxsim {
 				if (this.results[level] == 0) {
 					this.highestLevelReached = level;
 					var temp = window.localStorage["absoluteHighestLevel"];
-					if (temp == NaN) {
-						window.localStorage["absoluteHighestLevel"] = level;
-					} else {
-						window.localStorage["absoluteHighestLevel"] = Math.max(temp, level);
-					}
-					break; 
+					window.localStorage["absoluteHighestLevel"] = Math.max(temp, level);
+					break;
 				}
 			}
+
 			for (var level = 1; level < this.levelCount; level++) {
 				var hs = window.localStorage["absoluteHighestLevel"];
 				var history = window.localStorage["successHistory" + level];
 				if (level < this.highestLevelReached) {
-					if (history == undefined || history == "no") {
+					if (history == "no") {
 						window.localStorage["level" + level] = "success1";
 						window.localStorage["successHistory" + level] = "yes";
 					} else if (history == "yes") {
@@ -382,6 +384,47 @@ namespace pxsim {
 						window.localStorage["level" + level] = "lock";
 					}
 				}
+			}
+		}
+
+
+		//change button icon for a certain level
+		changeIcon(level : number) {
+			let icon;
+			let state = window.localStorage["level" + level];
+			if (state == "success1" || state == "successN") {
+				icon = "assets/images/yes.png";
+			} else if (state == "fail") {
+				icon = "assets/images/no.png";
+			} else if (state == "unlock") {
+				icon = "assets/images/unlock.png";
+			} else if (state == "lock") {
+				icon = "assets/images/lock.png";
+			}
+
+			switch(level) {
+				case 1:
+					this.button1.src = icon;
+					break;
+				case 2:
+					this.button2.src = icon;
+					break;
+				case 3:
+					this.button3.src = icon;
+					break;
+				case 4:
+					this.button4.src = icon;
+					break;
+				case 5:
+					this.button5.src = icon;
+					break;
+				case 6:
+					this.button6.src = icon;
+					break;
+				case 7:
+					this.button7.src = icon;
+					break;
+				default:
 			}
 		}
 
@@ -788,50 +831,6 @@ namespace pxsim {
 						this.logAction("faceLeft", level);
 					}
 				}
-			}
-		}
-
-
-		//change button icon for a certain level
-		changeIcon(level : number) {
-			let icon;
-			let state = window.localStorage["level" + level];
-			console.log(this.highestLevelReached);
-			console.log(window.localStorage["absoluteHighestLevel"])
-			console.log("level" + level + "," + state);
-			if ((state == "success1" || state == "successN") && level <= this.highestLevelReached) {
-				icon = "assets/images/yes.png";
-			} else if (state == "fail") {
-				icon = "assets/images/no.png";
-			} else if (state == "unlock") {
-				icon = "assets/images/unlock.png";
-			} else if (state == "lock") {
-				icon = "assets/images/lock.png";
-			}
-
-			switch(level) {
-				case 1:
-					this.button1.src = icon;
-					break;
-				case 2:
-					this.button2.src = icon;
-					break;
-				case 3:
-					this.button3.src = icon;
-					break;
-				case 4:
-					this.button4.src = icon;
-					break;
-				case 5:
-					this.button5.src = icon;
-					break;
-				case 6:
-					this.button6.src = icon;
-					break;
-				case 7:
-					this.button7.src = icon;
-					break;
-				default:
 			}
 		}
 
