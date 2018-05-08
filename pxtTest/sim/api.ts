@@ -5,6 +5,15 @@
 namespace pxsim.Robot {
 
     /**
+     * Moves the robot forward by 1 cell.
+     */
+    //% blockId=moveForward block="walk forward"
+    export function moveForwardAsync() {
+        board().moveForward();
+        return Promise.delay(100)
+    }
+
+    /**
      * Makes the robot turn left.
      */
     //% blockId=turnLeft block="turn left"
@@ -25,17 +34,16 @@ namespace pxsim.Robot {
     }
 
     /**
-     * Makes the robot face up.
+     * Makes the robot face up north.
      */
     //% blockId=faceUp block="face North"
     export function faceUpAsync() {
-        // Move the robot forward
         board().faceUp();
         return Promise.delay(100)
     }
 
     /**
-     * Makes the robot face down.
+     * Makes the robot face south.
      */
     //% blockId=faceDown block="face South"
     export function faceDownAsync() {
@@ -44,7 +52,7 @@ namespace pxsim.Robot {
     }
 
     /**
-     * Makes the robot face left.
+     * Makes the robot face west.
      */
     //% blockId=faceLeft block="face West"
     export function faceLeftAsync() {
@@ -53,7 +61,7 @@ namespace pxsim.Robot {
     }
 
     /**
-     * Makes the robot face right.
+     * Makes the robot face east.
      */
     //% blockId=faceRight block="face East"
     export function faceRightAsync() {
@@ -62,24 +70,17 @@ namespace pxsim.Robot {
     }
 
     /**
-     * Moves the robot 1 step in the direction it is facing.
+     * Returns true if there is wall directly in front of the robot, and false otherwise.
      */
     //% blockId=wallAhead block="wall ahead"
     export function wallAhead() {
         return board().wallAhead();
     }
 
-    /**
-     * Judges whether there is a wall ahead.
-     */
-    //% blockId=moveForward block="walk forward"
-    export function moveForwardAsync() {
-        board().moveForward();
-        return Promise.delay(100)
-    }
+
 
     /**
-     * Moves the robot 1 step in the direction it is facing.
+     * Causes the robot is use BFS to navigate the maze.
      */
     //% blockId=doSomething block="Breath First Search"
     export function BreathFirstSearch() {
