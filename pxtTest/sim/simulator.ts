@@ -9,7 +9,6 @@ namespace pxsim {
 		data?: string;
 	}
 
-
 	/**
 	 * This function gets called each time the program restarts
 	 */
@@ -367,8 +366,7 @@ namespace pxsim {
 			for (var level = 1; level < this.levelCount; level++) {
 				var hs = window.localStorage["absoluteHighestLevel"];
 				var history = window.localStorage["successHistory" + level];
-				if (this.results[level] == 1) {
-					console.log(history);
+				if (level < this.highestLevelReached) {
 					if (history == undefined || history == "no") {
 						window.localStorage["level" + level] = "success1";
 						window.localStorage["successHistory" + level] = "yes";
@@ -752,12 +750,56 @@ namespace pxsim {
 		}
 
 
+		turnLeft() {
+			for (var level = 1; level <= this.levelCount; level++) {
+				if (this.results[level] == 0) {
+					if (this.robotDirection[level] == "left") {
+						this.robotDirection[level] = "down";
+						this.logAction("faceDown", level);
+					} else if (this.robotDirection[level] == "up") {
+						this.robotDirection[level] = "left";
+						this.logAction("faceLeft", level);
+					} else if (this.robotDirection[level] == "right") {
+						this.robotDirection[level] = "up";
+						this.logAction("faceUp", level);
+					} else if (this.robotDirection[level] == "down") {
+						this.robotDirection[level] = "right";
+						this.logAction("faceRight", level);
+					}
+				}
+			}
+		}
+
+
+		turnRight() {
+			for (var level = 1; level <= this.levelCount; level++) {
+				if (this.results[level] == 0) {
+					if (this.robotDirection[level] == "left") {
+						this.robotDirection[level] = "up";
+						this.logAction("faceUp", level);
+					} else if (this.robotDirection[level] == "up") {
+						this.robotDirection[level] = "right";
+						this.logAction("faceRight", level);
+					} else if (this.robotDirection[level] == "right") {
+						this.robotDirection[level] = "down";
+						this.logAction("faceDown", level);
+					} else if (this.robotDirection[level] == "down") {
+						this.robotDirection[level] = "left";
+						this.logAction("faceLeft", level);
+					}
+				}
+			}
+		}
+
+
 		//change button icon for a certain level
 		changeIcon(level : number) {
 			let icon;
 			let state = window.localStorage["level" + level];
+			console.log(this.highestLevelReached);
+			console.log(window.localStorage["absoluteHighestLevel"])
 			console.log("level" + level + "," + state);
-			if (state == "success1" || state == "successN") {
+			if ((state == "success1" || state == "successN") && level <= this.highestLevelReached) {
 				icon = "assets/images/yes.png";
 			} else if (state == "fail") {
 				icon = "assets/images/no.png";

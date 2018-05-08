@@ -5,9 +5,29 @@
 namespace pxsim.Robot {
 
     /**
+     * Makes the robot turn left.
+     */
+    //% blockId=turnLeft block="turn left"
+    export function turnLeftAsync() {
+        // Move the robot forward
+        board().turnLeft();
+        return Promise.delay(100)
+    }
+
+    /**
+     * Makes the robot turn right.
+     */
+    //% blockId=turnRight block="turn right"
+    export function turnRightAsync() {
+        // Move the robot forward
+        board().turnRight();
+        return Promise.delay(100)
+    }
+
+    /**
      * Makes the robot face up.
      */
-    //% blockId=faceUp block="face up"
+    //% blockId=faceUp block="face North"
     export function faceUpAsync() {
         // Move the robot forward
         board().faceUp();
@@ -17,7 +37,7 @@ namespace pxsim.Robot {
     /**
      * Makes the robot face down.
      */
-    //% blockId=faceDown block="face down"
+    //% blockId=faceDown block="face South"
     export function faceDownAsync() {
         board().faceDown();
         return Promise.delay(100)
@@ -26,7 +46,7 @@ namespace pxsim.Robot {
     /**
      * Makes the robot face left.
      */
-    //% blockId=faceLeft block="face left"
+    //% blockId=faceLeft block="face West"
     export function faceLeftAsync() {
         board().faceLeft();
         return Promise.delay(100)
@@ -35,7 +55,7 @@ namespace pxsim.Robot {
     /**
      * Makes the robot face right.
      */
-    //% blockId=faceRight block="face right"
+    //% blockId=faceRight block="face East"
     export function faceRightAsync() {
         board().faceRight();
         return Promise.delay(100)
