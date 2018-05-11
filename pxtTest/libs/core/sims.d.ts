@@ -1,6 +1,13 @@
 // Auto-generated from simulator. Do not edit.
 declare namespace Robot {
     /**
+     * Moves the robot forward by 1 cell.
+     */
+    //% blockId=moveForward block="walk forward"
+    //% shim=Robot::moveForwardAsync promise
+    function moveForward(): void;
+
+    /**
      * Makes the robot turn left.
      */
     //% blockId=turnLeft block="turn left"
@@ -15,53 +22,39 @@ declare namespace Robot {
     function turnRight(): void;
 
     /**
-     * Makes the robot face up.
+     * Makes the robot face up north.
      */
     //% blockId=faceUp block="face North"
     //% shim=Robot::faceUpAsync promise
     function faceUp(): void;
 
     /**
-     * Makes the robot face down.
+     * Makes the robot face south.
      */
     //% blockId=faceDown block="face South"
     //% shim=Robot::faceDownAsync promise
     function faceDown(): void;
 
     /**
-     * Makes the robot face left.
+     * Makes the robot face west.
      */
     //% blockId=faceLeft block="face West"
     //% shim=Robot::faceLeftAsync promise
     function faceLeft(): void;
 
     /**
-     * Makes the robot face right.
+     * Makes the robot face east.
      */
     //% blockId=faceRight block="face East"
     //% shim=Robot::faceRightAsync promise
     function faceRight(): void;
 
     /**
-     * Moves the robot 1 step in the direction it is facing.
+     * Returns true if there is wall directly in front of the robot, and false otherwise.
      */
-    //% blockId=wallAhead block="wall ahead"
+    //% blockId=wallAhead block="wall ahead at level %level"
     //% shim=Robot::wallAhead
-    function wallAhead(): boolean;
-
-    /**
-     * Judges whether there is a wall ahead.
-     */
-    //% blockId=moveForward block="walk forward"
-    //% shim=Robot::moveForwardAsync promise
-    function moveForward(): void;
-
-    /**
-     * Moves the robot 1 step in the direction it is facing.
-     */
-    //% blockId=doSomething block="Breath First Search"
-    //% shim=Robot::BreathFirstSearch
-    function BreathFirstSearch(): void;
+    function wallAhead(level: number): boolean;
 
 }
 
