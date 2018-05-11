@@ -144,7 +144,7 @@ namespace pxsim {
 		preload() {
 
 			this.game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
-			this.game.load.spritesheet("robot", "assets/images/GirlSprite.png", 64, 64, 16);
+			this.game.load.spritesheet("robot", "assets/images/EyeRobot.png", 64, 64, 16);
 			this.game.load.image("tiles","assets/images/tiles.png");
 			
 			// Load in all maps that we have
