@@ -21,7 +21,8 @@
     },
     "simulator": {
         "autoRun": false,
-        "aspectRatio": 0.5
+        "aspectRatio": 0.5,
+        "instructions" : true 
     },
     "appTheme": {
         "logoUrl": "https://github.com/Microsoft/pxt-phaser-ce",
