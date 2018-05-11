@@ -52,16 +52,9 @@ declare namespace Robot {
     /**
      * Returns true if there is wall directly in front of the robot, and false otherwise.
      */
-    //% blockId=wallAhead block="wall ahead"
+    //% blockId=wallAhead block="wall ahead at level %level"
     //% shim=Robot::wallAhead
-    function wallAhead(): boolean;
-
-    /**
-     * Causes the robot is use BFS to navigate the maze.
-     */
-    //% blockId=doSomething block="Breath First Search"
-    //% shim=Robot::BreathFirstSearch
-    function BreathFirstSearch(): void;
+    function wallAhead(level: number): boolean;
 
 }
 

@@ -72,20 +72,18 @@ namespace pxsim.Robot {
     /**
      * Returns true if there is wall directly in front of the robot, and false otherwise.
      */
-    //% blockId=wallAhead block="wall ahead"
-    export function wallAhead() {
-        return board().wallAhead();
+    //% blockId=wallAhead block="wall ahead at level %level"
+    export function wallAhead(level: number) {
+        return board().wallAhead(level);
     }
-
-
 
     /**
      * Causes the robot is use BFS to navigate the maze.
      */
     //% blockId=doSomething block="Breath First Search"
-    export function BreathFirstSearch() {
-        board().triggerBFS();
-    }
+    // export function BreathFirstSearch() {
+    //     board().triggerBFS();
+    // }
 }
 
 // namespace pxsim.loops {
