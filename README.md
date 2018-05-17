@@ -35,9 +35,11 @@ wallAhead(), Breadth First Search
    }
  ```
 ## Charater design
+* character evolution
 
-![](screenshots/char-evolution.png)
-![](screenshots/char-design.png)
+![](screenshots/char_evolution.png)
+* character final design
+![](screenshots/char_design.png)
 
 ## Running locally
 
