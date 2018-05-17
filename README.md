@@ -2,7 +2,7 @@
 
 This repo contains a maze game built with [Microsoft MakeCode](https://github.com/Microsoft/pxt). 
 
-If you'd like to start your own editor, fork this repo and fix all the TODOs.
+- Try it alive: [https://zh324.github.io/Private-Eye](https://zh324.github.io/Private-Eye)
 
 ## Game Preview
 ![](screenshots/overview.png)
