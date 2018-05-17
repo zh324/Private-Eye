@@ -14,7 +14,7 @@ This repo contains a maze game built with [Microsoft MakeCode](https://github.co
 walkForward(), turnLeft(), turnRight(), faceNorth(), faceSouth(), faceWest(), faceEast()
 ```
 ```
-* TODOs: wallAhead(), Breadth First Search
+TODOs: wallAhead(), Breadth First Search
 ```
 
 ## Running locally
