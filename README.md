@@ -10,11 +10,13 @@ This repo contains a maze game designed to teach programming built with [Microso
 
 ## API design
 
+* Current API functions: 
 ```
 walkForward(), turnLeft(), turnRight(), faceNorth(), faceSouth(), faceWest(), faceEast()
 ```
+* TODOs:
 ```
-TODOs: wallAhead(), Breadth First Search
+wallAhead(), Breadth First Search
 ```
 ## Code example
  ```
