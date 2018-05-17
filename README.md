@@ -19,16 +19,17 @@ TODOs: wallAhead(), Breadth First Search
 ## Code example
  ```
   // This piece of code can pass through up to level 6
-  Robot.faceUp()
-  for (let i = 0; i < 5; i++) {
-      Robot.moveForward()
-  }
-  Robot.turnRight()
-  Robot.moveForward()
-  Robot.turnLeft()
-  for (let i = 0; i < 5; i++) {
-      Robot.moveForward()
-  }
+  
+   Robot.faceUp()
+   for (let i = 0; i < 5; i++) {
+       Robot.moveForward()
+   }
+   Robot.turnRight()
+   Robot.moveForward()
+   Robot.turnLeft()
+   for (let i = 0; i < 5; i++) {
+       Robot.moveForward()
+   }
  ```
 
 ## Running locally
