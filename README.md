@@ -1,11 +1,38 @@
 # Private Eye - Cornell MPS project Team
 
-This repo contains a maze game built with [Microsoft MakeCode](https://github.com/Microsoft/pxt). 
+This repo contains a maze game designed to teach programming built with [Microsoft MakeCode](https://github.com/Microsoft/pxt). Players can drag code blocks to playground to build their own logic and program the robot to reach the goal. Especially, this is a level game where users need to think of using one block of code to pass all the levels.
 
-If you'd like to start your own editor, fork this repo and fix all the TODOs.
+- Try it alive: [https://zh324.github.io/Private-Eye](https://zh324.github.io/Private-Eye)
 
 ## Game Preview
+
 ![](screenshots/overview.png)
+
+## API design
+
+* Current API functions: 
+```
+walkForward(), turnLeft(), turnRight(), faceNorth(), faceSouth(), faceWest(), faceEast()
+```
+* TODOs:
+```
+wallAhead(), Breadth First Search
+```
+## Code example
+ ```
+  // This piece of code can pass through up to level 6
+  
+   Robot.faceUp()
+   for (let i = 0; i < 5; i++) {
+       Robot.moveForward()
+   }
+   Robot.turnRight()
+   Robot.moveForward()
+   Robot.turnLeft()
+   for (let i = 0; i < 5; i++) {
+       Robot.moveForward()
+   }
+ ```
 
 ## Running locally
 
