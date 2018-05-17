@@ -54,7 +54,7 @@ declare namespace Robot {
      */
     //% blockId=wallAhead block="wall ahead at level %level"
     //% shim=Robot::wallAhead
-    function wallAhead(level: number): any;
+    function wallAhead(level: number): boolean;
 
 }
 
