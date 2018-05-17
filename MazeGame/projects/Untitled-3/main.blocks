@@ -1,0 +1,76 @@
+<xml xmlns="http://www.w3.org/1999/xhtml">
+  <variables></variables>
+  <block type="pxt-on-start" id="4O_tWrY_gvZx+;E+w`25" x="0" y="0">
+    <statement name="HANDLER">
+      <block type="moveForward" id="}B(%yfxCc{F~X[}E4nb4">
+        <next>
+          <block type="moveForward" id="O5BI,DcrD20U.j4TIfIO">
+            <next>
+              <block type="faceUp" id=".ji]564Dsx(N_;dd{i*g">
+                <next>
+                  <block type="moveForward" id="_!*w31-fG02l4lt-Q87}">
+                    <next>
+                      <block type="moveForward" id="*4qxk]@.V13iV`,D|t;@">
+                        <next>
+                          <block type="moveForward" id="Q0)o,W#_rMf3xBbaRZbr">
+                            <next>
+                              <block type="moveForward" id="}YFH$BGU(RNKP{ym#5zM">
+                                <next>
+                                  <block type="moveForward" id="y}D3dF0@!GM*}S{h8q/2">
+                                    <next>
+                                      <block type="moveForward" id="TR$1zq0N!VE`?,)@|F!k">
+                                        <next>
+                                          <block type="moveForward" id="n4[v/3f9+1~[8pQ1^_65">
+                                            <next>
+                                              <block type="faceRight" id="Pv;v%H){uiORj5?QkMWP">
+                                                <next>
+                                                  <block type="moveForward" id="8@x)s`r7sAYcqGiRT%JK">
+                                                    <next>
+                                                      <block type="faceUp" id="P.W/wNK%x|%s(+Mo6Ec-">
+                                                        <next>
+                                                          <block type="moveForward" id="SMs!3Xp()H]h!S~K,T-#">
+                                                            <next>
+                                                              <block type="moveForward" id="8R4A8iEF`U@*^T$%9P#r">
+                                                                <next>
+                                                                  <block type="moveForward" id="CYf`G,y=@}n~o6.riGi^">
+                                                                    <next>
+                                                                      <block type="moveForward" id="kR:({UL5e7Wm$,}l6:sa">
+                                                                        <next>
+                                                                          <block type="moveForward" id="c=0S!@dNOZao/(9(YBti"></block>
+                                                                        </next>
+                                                                      </block>
+                                                                    </next>
+                                                                  </block>
+                                                                </next>
+                                                              </block>
+                                                            </next>
+                                                          </block>
+                                                        </next>
+                                                      </block>
+                                                    </next>
+                                                  </block>
+                                                </next>
+                                              </block>
+                                            </next>
+                                          </block>
+                                        </next>
+                                      </block>
+                                    </next>
+                                  </block>
+                                </next>
+                              </block>
+                            </next>
+                          </block>
+                        </next>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+</xml>
