@@ -2,8 +2,8 @@
 ![](screenshots/topic.png)
 This repo contains a maze game designed to teach programming built with [Microsoft MakeCode](https://github.com/Microsoft/pxt). Players can drag code blocks to playground to build their own logic and program the robot to reach the goal. Especially, this is a level game where users need to think of using one block of code to pass all the levels.
 
-- Try it alive: [https://zh324.github.io/Private-Eye](https://zh324.github.io/Private-Eye)
-- More makecode examples: (https://makecode.com/labs)
+- Try it alive: [https://zh324.github.io/Private-Eye] (https://zh324.github.io/Private-Eye)
+- More makecode examples: [Makecode Labs] (https://makecode.com/labs)
 
 ## Game Preview
 
