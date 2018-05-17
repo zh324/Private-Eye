@@ -5,7 +5,14 @@ This repo contains a maze game built with [Microsoft MakeCode](https://github.co
 - Try it alive: [https://zh324.github.io/Private-Eye](https://zh324.github.io/Private-Eye)
 
 ## Game Preview
+
 ![](screenshots/overview.png)
+
+## Game Preview
+
+API design
+- walkForward(), turnLeft(), turnRight(), faceNorth(), faceSouth(), faceWest(), faceEast()
+- TODOs: wallAhead(), Breadth First Search
 
 ## Running locally
 
