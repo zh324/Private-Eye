@@ -4,6 +4,9 @@ This repo contains a maze game built with [Microsoft MakeCode](https://github.co
 
 If you'd like to start your own editor, fork this repo and fix all the TODOs.
 
+## Game Preview
+![](screenshots/overview.png)
+
 ## Running locally
 
 These instructions allow to run locally to play the game.
