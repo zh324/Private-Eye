@@ -1,10 +1,6 @@
-# Sample Phaser CE based MakeCode Editor
+Private Eye - Cornell MPS project Team
 
-This repo contains a sample editor built with [Microsoft MakeCode](https://github.com/Microsoft/pxt). The editor is hosted on the GitHub pages at [https://microsoft.github.io/pxt-phaser-ce/](http://microsoft.github.io/pxt-phaser-ce/)
-
-[![Build Status](https://travis-ci.org/Microsoft/pxt-sample.svg?branch=master)](https://travis-ci.org/Microsoft/pxt-sample)
-
-The code samples are from the [Phaser CE 2 Tutorial](https://phaser.io/tutorials/making-your-first-phaser-2-game).
+This repo contains a maze game built with [Microsoft MakeCode](https://github.com/Microsoft/pxt). 
 
 If you'd like to start your own editor, fork this repo and fix all the TODOs.
 
