@@ -1,0 +1,12 @@
+<xml xmlns="http://www.w3.org/1999/xhtml">
+  <variables></variables>
+  <block type="pxt-on-start" id=",Ir;2c=M9RC4PK1=XpOm" x="0" y="0">
+    <statement name="HANDLER">
+      <block type="moveForward" id="_q87;M!~;`;R[5qq%)/4">
+        <next>
+          <block type="moveForward" id="y416A8wMU%Cqm#t^JwI{"></block>
+        </next>
+      </block>
+    </statement>
+  </block>
+</xml>
