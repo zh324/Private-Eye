@@ -6,7 +6,7 @@ If you'd like to start your own editor, fork this repo and fix all the TODOs.
 
 ## Running locally
 
-These instructions allow to run locally to modify the sample.
+These instructions allow to run locally to play the game.
 
 ### Setup
 
