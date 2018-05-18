@@ -80,43 +80,8 @@ var pxsim;
             return Promise.delay(100);
         }
         Robot.faceRightAsync = faceRightAsync;
-        /**
-         * Returns true if there is wall directly in front of the robot, and false otherwise.
-         */
-        //% blockId=wallAhead block="wall ahead at level %level"
-        function wallAhead(level) {
-            return pxsim.board().wallAhead(level);
-        }
-        Robot.wallAhead = wallAhead;
-        /**
-         * Causes the robot is use BFS to navigate the maze.
-         */
-        //% blockId=doSomething block="Breath First Search"
-        // export function BreathFirstSearch() {
-        //     board().triggerBFS();
-        // }
     })(Robot = pxsim.Robot || (pxsim.Robot = {}));
 })(pxsim || (pxsim = {}));
-// namespace pxsim.loops {
-//     /**
-//      * Repeats the code forever in the background. On each iteration, allows other code to run.
-//      * @param body the code to repeat
-//      */
-//     //% help=functions/forever weight=55 blockGap=8
-//     //% blockId=device_forever block="forever" 
-//     export function forever(body: RefAction): void {
-//         thread.forever(body)
-//     }
-//     /**
-//      * Pause for the specified time in milliseconds
-//      * @param ms how long to pause for, eg: 100, 200, 500, 1000, 2000
-//      */
-//     //% help=functions/pause weight=54
-//     //% block="pause (ms) %pause" blockId=device_pause
-//     export function pauseAsync(ms: number) {
-//         return Promise.delay(ms)
-//     }
-// }
 /// <reference path="../node_modules/pxt-core/built/pxtsim.d.ts"/>
 /// <reference path="../node_modules/phaser-ce/typescript/phaser.d.ts" />
 var pxsim;
@@ -195,13 +160,13 @@ var pxsim;
         // Create initial variables of the game.
         // Called once at start of game load.
         Board.prototype.create = function () {
+            //This piece of code is to remember the history of user
+            // console.log(typeof(window.localStorage["level1"]));
+            // if (typeof(window.localStorage["level1"]) == "undefined") { 
+            //     this.reset();
+            // }
             var _this = this;
-            console.log(typeof (window.localStorage["level1"]));
-            if (typeof (window.localStorage["level1"]) == "undefined") {
-                console.log("I'm here");
-                this.reset();
-            }
-            // this.reset();
+            this.reset();
             this.bgm = this.game.add.audio('bgm');
             this.bgm.play();
             // Setup game physics
@@ -232,7 +197,6 @@ var pxsim;
             this.actionLog = [null];
             this.xHistory = [null];
             this.yHistory = [null];
-            this.wall_ahead = [false];
             this.count = 0;
             // Initialize arrays for all levels
             for (var level = 1; level <= this.levelCount; level++) {
@@ -497,7 +461,6 @@ var pxsim;
             this.startTweenChain();
         };
         Board.prototype.animateAllLevels = function (startingLevel) {
-            console.log(this.wall_ahead);
             this.animateLevel(startingLevel, true);
         };
         /*order: animateAllLevels -> animateLevel -> buildTweenChain -> startTweenChain*/
@@ -647,13 +610,6 @@ var pxsim;
         Board.prototype.faceLeft = function () {
             for (var level = 1; level <= this.levelCount; level++) {
                 if (this.results[level] == 0) {
-                    if (this.wallAhead(level)) {
-                        console.log("level" + level + " " + "true");
-                        this.wall_ahead.push(true);
-                    }
-                    else {
-                        this.wall_ahead.push(false);
-                    }
                     this.robotDirection[level] = "left";
                     this.logAction("faceLeft", level);
                 }
@@ -662,13 +618,6 @@ var pxsim;
         Board.prototype.faceRight = function () {
             for (var level = 1; level <= this.levelCount; level++) {
                 if (this.results[level] == 0) {
-                    if (this.wallAhead(level)) {
-                        console.log("level" + level + " " + "true");
-                        this.wall_ahead.push(true);
-                    }
-                    else {
-                        this.wall_ahead.push(false);
-                    }
                     this.robotDirection[level] = "right";
                     this.logAction("faceRight", level);
                 }
@@ -677,13 +626,6 @@ var pxsim;
         Board.prototype.faceUp = function () {
             for (var level = 1; level <= this.levelCount; level++) {
                 if (this.results[level] == 0) {
-                    if (this.wallAhead(level)) {
-                        console.log("level" + level + " " + "true");
-                        this.wall_ahead.push(true);
-                    }
-                    else {
-                        this.wall_ahead.push(false);
-                    }
                     this.robotDirection[level] = "up";
                     this.logAction("faceUp", level);
                 }
@@ -692,23 +634,10 @@ var pxsim;
         Board.prototype.faceDown = function () {
             for (var level = 1; level <= this.levelCount; level++) {
                 if (this.results[level] == 0) {
-                    if (this.wallAhead(level)) {
-                        console.log("level" + level + " " + "true");
-                        this.wall_ahead.push(true);
-                    }
-                    else {
-                        this.wall_ahead.push(false);
-                    }
                     this.robotDirection[level] = "down";
                     this.logAction("faceDown", level);
                 }
             }
-        };
-        Board.prototype.wallAheadforAPI = function () {
-            this.count++;
-            console.log("hello" + this.wall_ahead[this.count]);
-            // return this.wall_ahead[this.count];
-            return true;
         };
         Board.prototype.wallAhead = function (level) {
             if (this.robotDirection[level] == "left") {
@@ -736,14 +665,6 @@ var pxsim;
         };
         Board.prototype.moveForward = function () {
             for (var level = 1; level <= this.levelCount; level++) {
-                //not won yet
-                if (this.wallAhead(level)) {
-                    console.log("level" + level + " " + "true");
-                    this.wall_ahead.push(true);
-                }
-                else {
-                    this.wall_ahead.push(false);
-                }
                 if (this.results[level] == 0) {
                     if (this.robotDirection[level] == "left") {
                         var tileLeft = this.map[level].getTileLeft(this.map[level].getLayer(), this.robotX[level], this.robotY[level]);
@@ -856,117 +777,6 @@ var pxsim;
             for (var i = 0; i < strArray.length; i++) {
                 console.log(strArray[0] + ',' + strArray[1]);
             }
-        };
-        Board.prototype.triggerBFS = function () {
-            this.actionLog = [null];
-            for (var level = 1; level <= this.levelCount; level++) {
-                var path = this.BFS(level);
-                this.actionLog.push(this.getLevelActionLog(path));
-                this.getLevelPositionHistory(path, level);
-            }
-        };
-        Board.prototype.getLevelPositionHistory = function (path, level) {
-            var length = path.length;
-            for (var i = length - 1; i >= 0; i--) {
-                this.xHistory[level].push(path[i][1]);
-                this.yHistory[level].push(path[i][0]);
-            }
-            this.xHistory[level].push(this.terminalX[level]);
-            this.yHistory[level].push(this.terminalY[level]);
-        };
-        Board.prototype.getLevelActionLog = function (path) {
-            var result = [];
-            var length = path.length;
-            var cur, next;
-            for (var i = length - 1; i >= 1; i--) {
-                cur = i, next = i - 1;
-                if (path[next][0] == path[cur][0] - 1) {
-                    result.push("faceUp");
-                    result.push("moveForward");
-                }
-                else if (path[next][0] == path[cur][0] + 1) {
-                    result.push("faceDown");
-                    result.push("moveForward");
-                }
-                else if (path[next][1] == path[cur][1] - 1) {
-                    result.push("faceLeft");
-                    result.push("moveForward");
-                }
-                else if (path[next][1] == path[cur][1] + 1) {
-                    result.push("faceRight");
-                    result.push("moveForward");
-                }
-            }
-            result.push("faceUp");
-            result.push("moveForward");
-            return result;
-        };
-        // 	collideMusic(){
-        //         if (this.map[level].getTile(this.robotX, this.robotY, this.map[level].getLayer()).index != 3) {
-        //             this.hitWall = this.game.add.audio('hitWall');
-        //             this.hitWall.play();
-        //            }
-        //      }
-        //      winMusic(){
-        //         
-        //         this.winStage = this.game.add.audio('win');
-        //         this.winStage.play();
-        //         
-        //      }
-        Board.prototype.BFS = function (level) {
-            var N = 11, M = 7;
-            var new_node = [];
-            var path_node = [];
-            var nei = [];
-            var cur = [];
-            var matrix = [];
-            var visited = []; //avoid duplication
-            var end = [];
-            var start = [];
-            //four directions
-            var directionY = [];
-            var directionX = [];
-            var queue = []; //for BFS
-            var stack = []; //for backtracking
-            var result = [];
-            result = [];
-            stack = [];
-            queue = [];
-            directionX = [1, 0, -1, 0];
-            directionY = [0, 1, 0, -1];
-            start = [this.robotStartingY[level], this.robotStartingX[level], 0, 0];
-            end = [this.terminalY[level], this.terminalX[level], 0, 0];
-            visited = [[0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0]];
-            matrix = this.levelMatrix[level];
-            cur = [0, 0, 0, 0];
-            nei = [0, 0, 0, 0];
-            queue.push(start);
-            visited[start[0]][start[1]] = 1;
-            while (queue.length != 0) {
-                cur = queue.shift();
-                stack.push(cur);
-                for (var i = 0; i <= 4 - 1; i++) {
-                    nei[0] = cur[0] + directionX[i];
-                    nei[1] = cur[1] + directionY[i];
-                    nei[2] = cur[0];
-                    nei[3] = cur[1];
-                    if (nei[0] == end[0] && nei[1] == end[1]) {
-                        while (stack.length != 0) {
-                            path_node = stack.pop();
-                            if (nei[2] == path_node[0] && nei[3] == path_node[1]) {
-                                result.push([path_node[0], path_node[1], path_node[2], path_node[3]]);
-                                nei = path_node;
-                            }
-                        }
-                    }
-                    if (nei[0] >= 0 && nei[0] < N && nei[1] >= 0 && nei[1] < M && !(visited[nei[0]][nei[1]]) && (matrix[nei[0]][nei[1]] == 2 || matrix[nei[0]][nei[1]] == 3)) {
-                        new_node = [nei[0], nei[1], nei[2], nei[3]];
-                        queue.push(new_node);
-                        visited[nei[0]][nei[1]] = 1;
-                    }
-                }
-            }
-            return result;
         };
         return Board;
     }(pxsim.BaseBoard));

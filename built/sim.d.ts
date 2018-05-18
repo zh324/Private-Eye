@@ -30,10 +30,6 @@ declare namespace pxsim.Robot {
      * Makes the robot face east.
      */
     function faceRightAsync(): Promise<void>;
-    /**
-     * Returns true if there is wall directly in front of the robot, and false otherwise.
-     */
-    function wallAhead(level: number): boolean;
 }
 declare namespace pxsim {
     interface ISimMessage {
@@ -62,7 +58,6 @@ declare namespace pxsim {
         RanAllLevels: number;
         updateCounter: number;
         pauseUpdate: boolean;
-        wall_ahead: any;
         count: number;
         map: any;
         layer: any;
@@ -121,7 +116,6 @@ declare namespace pxsim {
         faceRight(): void;
         faceUp(): void;
         faceDown(): void;
-        wallAheadforAPI(): boolean;
         wallAhead(level: number): boolean;
         moveForward(): void;
         turnLeft(): void;
@@ -130,9 +124,5 @@ declare namespace pxsim {
         logAction(action: string, level: number): void;
         capitalizeFirstLetter(str: string): string;
         printSomething(strArray: number[][]): void;
-        triggerBFS(): void;
-        getLevelPositionHistory(path: any, level: number): void;
-        getLevelActionLog(path: any): string[];
-        BFS(level: number): number[][];
     }
 }

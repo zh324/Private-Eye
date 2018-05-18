@@ -49,13 +49,6 @@ declare namespace Robot {
     //% shim=Robot::faceRightAsync promise
     function faceRight(): void;
 
-    /**
-     * Returns true if there is wall directly in front of the robot, and false otherwise.
-     */
-    //% blockId=wallAhead block="wall ahead at level %level"
-    //% shim=Robot::wallAhead
-    function wallAhead(level: number): boolean;
-
 }
 
 // Auto-generated. Do not edit. Really.

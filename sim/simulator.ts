@@ -8,6 +8,7 @@ namespace pxsim {
 	        data?: string;
 	    }
 	
+
 	    /**
 	     * This function gets called each time the program restarts
 	     */
@@ -33,6 +34,7 @@ namespace pxsim {
 	        } as pxsim.SimulatorCustomMessage);
 	    };
 	
+
 	    /**
 	     * Represents the entire state of the executing program.
 	     * Do not store state anywhere else!
@@ -59,7 +61,6 @@ namespace pxsim {
 	        public pauseUpdate: boolean;
 	
 	        // Game logic
-	        public wall_ahead: any;
 			public count: number;
 	        public map: any;
 	        public layer: any;
@@ -172,12 +173,13 @@ namespace pxsim {
 	        // Create initial variables of the game.
 	        // Called once at start of game load.
 	        create() {
-	            console.log(typeof(window.localStorage["level1"]));
-	            if (typeof(window.localStorage["level1"]) == "undefined") { 
-	                console.log("I'm here")
-	                this.reset();
-	            }
-				// this.reset();
+				//This piece of code is to remember the history of user
+	            // console.log(typeof(window.localStorage["level1"]));
+	            // if (typeof(window.localStorage["level1"]) == "undefined") { 
+	            //     this.reset();
+				// }
+				
+				this.reset();
 	   		    this.bgm = this.game.add.audio('bgm');
 	            this.bgm.play();
 
@@ -217,7 +219,6 @@ namespace pxsim {
 	            this.xHistory = [null];
 	            this.yHistory = [null];
 	
-	            this.wall_ahead = [false];
 				this.count = 0;
 	
 	            // Initialize arrays for all levels
@@ -513,7 +514,6 @@ namespace pxsim {
 	
 	
 	        animateAllLevels(startingLevel: number) {
-				console.log(this.wall_ahead);
 	            this.animateLevel(startingLevel, true);
 	        }
 	
@@ -703,12 +703,6 @@ namespace pxsim {
 	        faceLeft() {
 	            for (var level = 1; level <= this.levelCount; level++) {
 	                if (this.results[level] == 0) {
-						if (this.wallAhead(level)) {
-							console.log("level" + level + " " + "true")
-							this.wall_ahead.push(true);
-						} else {
-							this.wall_ahead.push(false);
-						}
 	                    this.robotDirection[level] = "left";
 	                    this.logAction("faceLeft", level);
 	                }
@@ -719,12 +713,6 @@ namespace pxsim {
 	        faceRight() {
 	            for (var level = 1; level <= this.levelCount; level++) {
 	                if (this.results[level] == 0) {
-						if (this.wallAhead(level)) {
-							console.log("level" + level + " " + "true")
-							this.wall_ahead.push(true);
-						} else {
-							this.wall_ahead.push(false);
-						}
 	                    this.robotDirection[level] = "right";
 	                    this.logAction("faceRight", level);
 	                }
@@ -735,12 +723,6 @@ namespace pxsim {
 	        faceUp() {
 	            for (var level = 1; level <= this.levelCount; level++) {
 	                if (this.results[level] == 0) {
-						if (this.wallAhead(level)) {
-							console.log("level" + level + " " + "true")
-							this.wall_ahead.push(true);
-						} else {
-							this.wall_ahead.push(false);
-						}
 	                    this.robotDirection[level] = "up";
 	                    this.logAction("faceUp", level);
 	                }
@@ -751,26 +733,12 @@ namespace pxsim {
 	        faceDown() {
 	            for (var level = 1; level <= this.levelCount; level++) {
 	                if (this.results[level] == 0) {
-						if (this.wallAhead(level)) {
-							console.log("level" + level + " " + "true")
-							this.wall_ahead.push(true);
-						} else {
-							this.wall_ahead.push(false);
-						}
 	                    this.robotDirection[level] = "down";
 	                    this.logAction("faceDown", level);
 	                }
 	            }
 	        }
 	
-
-	        wallAheadforAPI() {
-				this.count++;
-				console.log("hello" + this.wall_ahead[this.count])
-				// return this.wall_ahead[this.count];
-				return true;
-
-	        }
 	
 	        wallAhead(level: number) {
 	            if (this.robotDirection[level] == "left") {
@@ -803,14 +771,6 @@ namespace pxsim {
 	
 	        moveForward() {
 	            for (var level = 1; level <= this.levelCount; level++) {
-	                //not won yet
-					if (this.wallAhead(level)) {
-						console.log("level" + level + " " + "true")
-						this.wall_ahead.push(true);
-					} else {
-						this.wall_ahead.push(false);
-					}
-
 	                if (this.results[level] == 0) {
 	                    if (this.robotDirection[level] == "left") {
 	                        var tileLeft = this.map[level].getTileLeft(this.map[level].getLayer(), this.robotX[level], this.robotY[level]);
@@ -931,52 +891,6 @@ namespace pxsim {
 	                console.log(strArray[0] + ',' + strArray[1]);
 	            }
 	        }
-	
-	
-	        triggerBFS() {
-	            this.actionLog = [null];
-	            for (var level = 1; level <= this.levelCount; level++) {
-	                var path = this.BFS(level);
-	                this.actionLog.push(this.getLevelActionLog(path));
-	                this.getLevelPositionHistory(path, level);
-	            }
-	        }
-	
-	
-	        getLevelPositionHistory(path: any, level: number) {
-	            var length = path.length;
-	            for (var i = length - 1; i >= 0; i--) {
-	                this.xHistory[level].push(path[i][1]);
-	                this.yHistory[level].push(path[i][0]);
-	            }
-	            this.xHistory[level].push(this.terminalX[level]);
-	            this.yHistory[level].push(this.terminalY[level]);
-	        }
-	
-	        getLevelActionLog(path: any) {
-	            var result = [];
-	            var length = path.length;
-	            var cur, next;
-	            for (var i = length - 1; i >= 1; i--) {
-	                cur = i, next = i - 1;
-	                if (path[next][0] == path[cur][0] - 1) {
-	                    result.push("faceUp");
-	                    result.push("moveForward");
-	                } else if (path[next][0] == path[cur][0] + 1) {
-	                    result.push("faceDown");
-	                    result.push("moveForward");
-	                } else if (path[next][1] == path[cur][1] - 1) {
-	                    result.push("faceLeft");
-	                    result.push("moveForward");
-	                } else if (path[next][1] == path[cur][1] + 1) {
-	                    result.push("faceRight");
-	                    result.push("moveForward");
-	                }
-	            }
-	            result.push("faceUp");
-	            result.push("moveForward");
-	            return result;
-	        }
 
 		// 	collideMusic(){
 		//         if (this.map[level].getTile(this.robotX, this.robotY, this.map[level].getLayer()).index != 3) {
@@ -991,71 +905,7 @@ namespace pxsim {
 		//         this.winStage.play();
 		//         
 		//      }
-	
-	        BFS(level: number) {
-	            let N = 11, M = 7;
-	            let new_node: number[] = []
-	            let path_node: number[] = []
-	
-	            let nei: number[] = []
-	            let cur: number[] = []
-	
-	            let matrix: number[][] = []
-	            let visited: number[][] = [] //avoid duplication
-	            let end: number[] = []
-	            let start: number[] = []
-	
-	            //four directions
-	            let directionY: number[] = []
-	            let directionX: number[] = []
-	
-	            let queue: number[][] = [] //for BFS
-	            let stack: number[][] = [] //for backtracking
-	            let result: number[][] = []
-	            result = []
-	            stack = []
-	            queue = []
-	
-	            directionX = [1, 0, -1, 0]
-	            directionY = [0, 1, 0, -1]
-	
-	            start = [this.robotStartingY[level], this.robotStartingX[level], 0, 0];
-	            end = [this.terminalY[level], this.terminalX[level], 0, 0];
-	
-	            visited = [[0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0]]
-	            matrix = this.levelMatrix[level];
-	
-	            cur = [0, 0, 0, 0]
-	            nei = [0, 0, 0, 0]
-	            queue.push(start)
-	            visited[start[0]][start[1]] = 1
-	
-	            while (queue.length != 0) {
-	                cur = queue.shift()
-	                stack.push(cur)
-	                for (let i = 0; i <= 4 - 1; i++) {
-	                    nei[0] = cur[0] + directionX[i]
-	                    nei[1] = cur[1] + directionY[i]
-	                    nei[2] = cur[0]
-	                    nei[3] = cur[1]
-	                    if (nei[0] == end[0] && nei[1] == end[1]) {
-	                        while (stack.length != 0) {
-	                            path_node = stack.pop()
-	                            if (nei[2] == path_node[0] && nei[3] == path_node[1]) {
-	                                result.push([path_node[0], path_node[1], path_node[2], path_node[3]])
-	                                nei = path_node
-	                            }
-	                        }
-	                    }
-	                    if (nei[0] >= 0 && nei[0] < N && nei[1] >= 0 && nei[1] < M && !(visited[nei[0]][nei[1]]) && (matrix[nei[0]][nei[1]] == 2 || matrix[nei[0]][nei[1]] == 3)) {
-	                        new_node = [nei[0], nei[1], nei[2], nei[3]]
-	                        queue.push(new_node)
-	                        visited[nei[0]][nei[1]] = 1
-	                    }
-	                }
-	            }
-	            return result;
-	        }
-	    }
+		}
 	}
+
 	

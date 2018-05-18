@@ -1,0 +1,21 @@
+<xml xmlns="http://www.w3.org/1999/xhtml">
+  <variables></variables>
+  <block type="pxt-on-start" id="H3x~PrJR/lJ_Yy?25cY/" x="0" y="0">
+    <statement name="HANDLER">
+      <block type="faceUp" id="90-@wp!)?5Qz`2;v;R5g">
+        <next>
+          <block type="controls_repeat_ext" id="%wOGMey(aYfyEd-+:JOZ">
+            <value name="TIMES">
+              <shadow type="math_whole_number" id="7/oJ9k*?ktFo%.R~EGz5">
+                <field name="NUM">10</field>
+              </shadow>
+            </value>
+            <statement name="DO">
+              <block type="moveForward" id="IRGYt,_=!NK20}?/BLm{"></block>
+            </statement>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+</xml>
