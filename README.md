@@ -6,23 +6,33 @@ Private Eye is a maze solver coding game. The player must direct the main charac
 
 - Try it live: [https://zh324.github.io/Private-Eye](https://zh324.github.io/Private-Eye)
 
-- More makecode examples: [Makecode Labs](https://makecode.com/labs)
+- More MakeCode examples: [Makecode Labs](https://makecode.com/labs)
 
 ## Game Preview
 
 ![](screenshots/overview.png)
 
-## API design
+## API Design
 
 * Current API functions: 
 ```
-walkForward(), turnLeft(), turnRight(), faceNorth(), faceSouth(), faceWest(), faceEast()
+- walkForward()
+- turnLeft()
+- turnRight()
+- faceNorth()
+- faceSouth()
+- faceWest()
+- faceEast()
 ```
 * TODOs:
 ```
-wallAhead(), Breadth First Search
+- wallAhead() API function
+- Music and sound
+- Background graphics
+
+Breadth First Search
 ```
-## Code example
+## Code Example
  ```
   // This piece of code can pass through up to level 6
   
@@ -37,13 +47,13 @@ wallAhead(), Breadth First Search
        Robot.moveForward()
    }
  ```
-## Charater design
+## Charater Design
 
-* character evolution
+* Character Evolution
 
 ![](screenshots/char_evolution.png)
 
-* character final design
+* Character Final Design
 
 ![](screenshots/char_design.png)
 
