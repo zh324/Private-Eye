@@ -2,27 +2,37 @@
 
 ![](screenshots/main.png)
 
-This repo contains a maze game designed to teach programming built with [Microsoft MakeCode](https://github.com/Microsoft/pxt). Players can drag code blocks to playground to build their own logic and program the robot to reach the goal. Especially, this is a level game where users need to think of using one block of code to pass all the levels.
+Private Eye is a maze solver coding game. The player must direct the main character, Private Eye, through a series of mazes by constructing a single piece of code.  Players can drag code blocks to the playground to build their own logic, and program the robot to reach the goal. There are 10 mazes in total, each of increasing difficulty. The user's code will be run against all 10 levels. Private Eye is built on [Microsoft MakeCode](https://github.com/Microsoft/pxt).
 
-- Try it alive: [https://zh324.github.io/Private-Eye](https://zh324.github.io/Private-Eye)
+- Try it live: [https://zh324.github.io/Private-Eye](https://zh324.github.io/Private-Eye)
 
-- More makecode examples: [Makecode Labs](https://makecode.com/labs)
+- More MakeCode examples: [Makecode Labs](https://makecode.com/labs)
 
 ## Game Preview
 
 ![](screenshots/overview.png)
 
-## API design
+## API Design
 
 * Current API functions: 
 ```
-walkForward(), turnLeft(), turnRight(), faceNorth(), faceSouth(), faceWest(), faceEast()
+- walkForward()
+- turnLeft()
+- turnRight()
+- faceNorth()
+- faceSouth()
+- faceWest()
+- faceEast()
 ```
 * TODOs:
 ```
-wallAhead(), Breadth First Search
+- wallAhead() API function
+- Music and sound
+- Background graphics
+
+Breadth First Search
 ```
-## Code example
+## Code Example
  ```
   // This piece of code can pass through up to level 6
   
@@ -37,19 +47,19 @@ wallAhead(), Breadth First Search
        Robot.moveForward()
    }
  ```
-## Charater design
+## Charater Design
 
-* character evolution
+* Character Evolution
 
 ![](screenshots/char_evolution.png)
 
-* character final design
+* Character Final Design
 
 ![](screenshots/char_design.png)
 
 ## Running locally
 
-These instructions allow to run locally to play the game.
+Follow these instructions to set up and run the game locally.
 
 ### Setup
 
