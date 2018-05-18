@@ -1,8 +1,0 @@
-<xml xmlns="http://www.w3.org/1999/xhtml">
-  <variables></variables>
-  <block type="pxt-on-start" id="iY9Gsegte^#}JC+vUSEJ" x="0" y="0">
-    <statement name="HANDLER">
-      <block type="faceUp" id="J]#:{:OA)^CxM#t=y88}"></block>
-    </statement>
-  </block>
-</xml>
